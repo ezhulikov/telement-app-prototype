@@ -87,6 +87,10 @@
   .seg button{flex:1;border:0;background:#fff;padding:10px;font-family:inherit;font-size:14px;color:var(--muted);cursor:pointer}
   .seg button.on{background:var(--ink);color:#fff;font-weight:600}
   .tile.off{opacity:.45}
+  .stepper{display:flex;align-items:center;gap:12px}
+  .stepper button{width:40px;height:40px;border:1px solid var(--accent);background:#fff;border-radius:4px;font-size:20px;color:var(--accent);cursor:pointer;font-family:inherit}
+  .stepper button:disabled{opacity:.35;cursor:default}
+  .stepper b{min-width:18px;text-align:center;font-size:18px}
   .plus{color:#00a901;font-weight:600}.minus{color:#ab2e31;font-weight:600}
 </style>
 </head>
@@ -221,13 +225,14 @@ const V={
    <span class="${ok?"plus":"muted"}" style="text-align:right;font-size:14px">${ok?"✓ "+t("avail"):t("need")+" "+(r.pts-S.points)}</span></div>`}).join("")+
   `<div class="card qr"><div class="box">${qrSVG("TELEMENT:"+S.phone)}</div><span class="muted">${t("show_qr_r")}</span></div>`+
   `<h2>${t("history")}</h2><div class="card history">${S.history.slice().reverse().map(h=>`<div><span>${h.d} · ${t(h.k)}</span><span class="${h.v>0?"plus":"minus"}">${h.v>0?"+":""}${h.v}</span></div>`).join("")}</div>`},
- events(){return `<h1>${t("events")}</h1>`+EVENTS.map(e=>{const mine=!!S.booked[e.id],taken=e.taken+(mine?1:0),left=e.seats-taken,o=!!OPEN[e.id];
+ events(){return `<h1>${t("events")}</h1>`+EVENTS.map(e=>{const mine=+S.booked[e.id]||0,taken=e.taken+mine,left=e.seats-taken,o=!!OPEN[e.id];
   return `<div class="card event ${o?"open":""}"><div class="tap" onclick="tog('${e.id}')"><div class="media"><img src="${e.img}" alt=""></div>
    <div class="date">${L(e.date)}</div><h3>${L(e.title)}</h3>
    ${o?`<div class="desc">${L(e.desc)}</div>`:""}<span class="more">${o?t("less")+" ▴":t("more")+" ▾"}</span></div>
    <div class="row" style="margin:8px 0 12px"><span class="muted">${t("seats_left")}: ${left} ${t("of")} ${e.seats}</span><span class="pill">${e.price} · ${t("pay_cash")}</span></div>
-   ${mine?`<div class="row"><b style="color:var(--ink)">✓ ${t("signed")}</b><button class="btn small ghost" onclick="book('${e.id}',false)">${t("cancel")}</button></div>`
-     :`<button class="btn" ${left<=0?"disabled":""} onclick="book('${e.id}',true)">${left<=0?t("full"):t("signup")}</button>`}</div>`}).join("")},
+   ${mine?`<div class="row"><div><b style="color:var(--ink)">✓ ${t("signed")}</b><div class="muted">${t("seats_mine")}: ${mine}${mine>=MAXG?" · "+t("max_g")+" "+MAXG:""}</div></div>
+      <div class="stepper"><button onclick="seat('${e.id}',-1)">−</button><b>${mine}</b><button ${left<=0||mine>=MAXG?"disabled":""} onclick="seat('${e.id}',1)">+</button></div></div>`
+     :`<button class="btn" ${left<=0?"disabled":""} onclick="seat('${e.id}',1)">${left<=0?t("full"):t("signup")}</button>`}</div>`}).join("")},
  teas(){return `<h1>${t("new_in")}</h1>`+TEAS.map(x=>{const o=!!OPEN[x.id],si=SEL[x.id]||0,v=x.vars[si],href=SHOP+v[1];
    const btn=cls=>`<a class="btn ${cls}" href="${href}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${t("order")}</a>`;
    return `<div class="card tea tap ${o?"open":""}" onclick="tog('${x.id}')"><div class="media"><img src="${x.img}" alt=""></div>
@@ -277,6 +282,9 @@ Object.assign(T.sr,{rule2:"Bodovi se dobijaju za pića. Za nagradu pokažite QR 
 Object.assign(T.en,{rule2:"You earn points for drinks. To get a reward, show your QR code at the counter.",avail:"available",need:"need",show_qr_r:"Show this code to the cashier, they will give you the reward and deduct the points.",
  tab_earn:"Add points",tab_reward:"Give reward",give:"Give",given:"Given",drinks:"Drinks",rewards_l:"Rewards",add_reward:"Add reward",price_lbl:"Price in points",
  del_qr:"Remove this reward? It stays in the log.",rew_hint:"Guests see rewards under Points. The cashier hands them out and points are deducted automatically.",l_earn:"points added",l_reward:"reward"});
+Object.assign(T.ru,{seats_mine:"Ваших мест",max_g:"максимум на гостя"});
+Object.assign(T.sr,{seats_mine:"Vaših mesta",max_g:"najviše po gostu"});
+Object.assign(T.en,{seats_mine:"Your seats",max_g:"max per guest"});
 const DEF_DRINKS=[
  {id:"d1",pts:15,name:{ru:"Чай в чайнике",sr:"Čaj u čajniku",en:"Pot of tea"}},
  {id:"d2",pts:25,name:{ru:"Гунфу ча",sr:"Gongfu ča",en:"Gongfu cha"}},
@@ -363,6 +371,11 @@ function logout(){S.phone=null;save();render()}
 function today(){const d=new Date();return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")}
 function buy(){S.points+=35;S.history.push({k:"purchase",v:35,d:today()});save();render();toast(t("earned")+": +35 "+t("pts"))}
 function redeem(id){const r=REWARDS.find(x=>x.id==id);if(S.points<r.cost)return;S.points-=r.cost;S.history.push({k:"reward",v:-r.cost,d:today()});save();render();toast(t("redeemed")+": "+L(r.name))}
+const MAXG=4;
+function seat(id,n){const e=EVENTS.find(x=>x.id==id),cur=+S.booked[id]||0,left=e.seats-e.taken-cur;
+ if(n>0&&(left<=0||cur>=MAXG))return;const v=Math.max(0,cur+n);
+ if(v)S.booked[id]=v;else delete S.booked[id];save();render();
+ toast(v==0?t("cancel_ok"):cur==0?t("signed_ok"):t("seats_mine")+": "+v)}
 function book(id,on){if(on)S.booked[id]=true;else delete S.booked[id];save();render();toast(on?t("signed_ok"):t("cancel_ok"))}
 function toggleNotify(){S.notify=!S.notify;save();render()}
 function render(){document.body.classList.toggle("out",!S.phone);langs();roles();if(S.phone&&S.role=="guest"&&!["home","rewards","events","teas"].includes(S.tab))S.tab="home";if(S.phone&&S.role!="guest"&&!["cashier","log","menu"].includes(S.tab))S.tab="cashier";if(S.role=="cashier"&&S.tab=="menu")S.tab="cashier";document.getElementById("view").innerHTML=S.phone?V[S.tab]():V.login();nav()}
