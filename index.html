@@ -83,6 +83,10 @@
   .form label{display:block;font-size:13px;color:var(--muted);margin-top:4px}
   .form input{margin:4px 0 10px;font-size:15px;padding:11px}
   .guest{display:flex;justify-content:space-between;align-items:center}
+  .seg{display:flex;border:1px solid var(--line);border-radius:4px;margin:0 0 14px;overflow:hidden}
+  .seg button{flex:1;border:0;background:#fff;padding:10px;font-family:inherit;font-size:14px;color:var(--muted);cursor:pointer}
+  .seg button.on{background:var(--ink);color:#fff;font-weight:600}
+  .tile.off{opacity:.45}
   .plus{color:#00a901;font-weight:600}.minus{color:#ab2e31;font-weight:600}
 </style>
 </head>
@@ -192,7 +196,7 @@ function nav(){const n=document.getElementById("nav");if(!S.phone){n.style.displ
  n.innerHTML=items.map(([k,i])=>`<button class="${S.tab==k?"on":""}" onclick="go('${k}')"><span class="ic">${i}</span>${t(k)}</button>`).join("")}
 function go(k){S.tab=k;save();render();window.scrollTo(0,0)}
 function qrSVG(text){if(typeof qrcode==="undefined")return `<div class="muted">QR</div>`;const q=qrcode(0,"M");q.addData(text);q.make();return q.createSvgTag(5,0)}
-function nextGoal(){const c=REWARDS.map(r=>r.cost).find(c=>c>S.points)||REWARDS[REWARDS.length-1].cost;return c}
+function nextGoal(){const R=(S.rewards||[]).filter(r=>r.active).map(r=>r.pts).sort((a,b)=>a-b);if(!R.length)return 1;return R.find(c=>c>S.points)||R[R.length-1]}
 const V={
  login(){
   const top=`<img class="mark" src="assets/logo-square.png" alt="t.element">`;
@@ -212,9 +216,10 @@ const V={
   <div class="card qr"><div class="box">${qrSVG("TELEMENT:"+S.phone)}</div><b>${t("show_qr")}</b><span class="muted">${t("qr_hint")}</span></div>
   <div class="card"><div class="muted" style="margin-bottom:10px">${t("sim")}</div><button class="btn ghost" onclick="buy()">${t("sim_btn")}</button></div>
   <p class="muted" style="text-align:center;margin:16px 0"><a href="#" onclick="logout();return false" style="color:var(--muted)">${t("logout")}</a></p>`},
- rewards(){return `<h1>${t("rewards")}: ${S.points}</h1><p class="muted" style="margin-bottom:14px">${t("rule")}</p>`+
-  REWARDS.map(r=>`<div class="card reward row"><div><h3>${L(r.name)}</h3><span class="pill">${r.cost} ${t("pts")}</span></div>
-   <button class="btn small" ${S.points<r.cost?"disabled":""} onclick="redeem('${r.id}')">${S.points<r.cost?t("not_enough"):t("redeem")}</button></div>`).join("")+
+ rewards(){const R=S.rewards.filter(r=>r.active).sort((a,b)=>a.pts-b.pts);return `<h1>${t("rewards")}: ${S.points}</h1><p class="muted" style="margin-bottom:14px">${t("rule2")}</p>`+
+  R.map(r=>{const ok=S.points>=r.pts;return `<div class="card reward row"><div><h3>${DN(r)}</h3><span class="pill">${r.pts} ${t("pts")}</span></div>
+   <span class="${ok?"plus":"muted"}" style="text-align:right;font-size:14px">${ok?"✓ "+t("avail"):t("need")+" "+(r.pts-S.points)}</span></div>`}).join("")+
+  `<div class="card qr"><div class="box">${qrSVG("TELEMENT:"+S.phone)}</div><span class="muted">${t("show_qr_r")}</span></div>`+
   `<h2>${t("history")}</h2><div class="card history">${S.history.slice().reverse().map(h=>`<div><span>${h.d} · ${t(h.k)}</span><span class="${h.v>0?"plus":"minus"}">${h.v>0?"+":""}${h.v}</span></div>`).join("")}</div>`},
  events(){return `<h1>${t("events")}</h1>`+EVENTS.map(e=>{const mine=!!S.booked[e.id],taken=e.taken+(mine?1:0),left=e.seats-taken,o=!!OPEN[e.id];
   return `<div class="card event ${o?"open":""}"><div class="tap" onclick="tog('${e.id}')"><div class="media"><img src="${e.img}" alt=""></div>
@@ -262,6 +267,16 @@ Object.assign(T.sr,{login_hint:"Prijavite se e-poštom. Bodovi i prijave biće v
 Object.assign(T.en,{login_hint:"Sign in with your email. Points and bookings will be linked to it. No password needed.",email:"Your email",get_link:"Email me a sign-in link",
  check_mail:"Check your inbox",sent_to:"We sent a sign-in link to",link_hint:"In the prototype no email is sent, tap the button below.",open_link:"Open the link from the email",
  change_email:"Use another email",or:"or",tg:"Sign in with Telegram",bad_email:"Check the email address"});
+
+Object.assign(T.ru,{rule2:"Баллы начисляются за напитки. Чтобы получить награду, покажите QR-код на кассе.",avail:"доступно",need:"не хватает",show_qr_r:"Покажите этот код кассиру, он выдаст награду и спишет баллы.",
+ tab_earn:"Начислить",tab_reward:"Выдать награду",give:"Выдать",given:"Выдано",drinks:"Напитки",rewards_l:"Награды",add_reward:"Добавить награду",price_lbl:"Цена в баллах",
+ del_qr:"Убрать награду? В журнале она останется.",rew_hint:"Гость видит награды в разделе «Баллы». Выдаёт их кассир, баллы списываются автоматически.",l_earn:"начисление",l_reward:"награда"});
+Object.assign(T.sr,{rule2:"Bodovi se dobijaju za pića. Za nagradu pokažite QR kod na kasi.",avail:"dostupno",need:"nedostaje",show_qr_r:"Pokažite ovaj kod kasiru, on će dati nagradu i skinuti bodove.",
+ tab_earn:"Dodaj bodove",tab_reward:"Daj nagradu",give:"Daj",given:"Dato",drinks:"Pića",rewards_l:"Nagrade",add_reward:"Dodaj nagradu",price_lbl:"Cena u bodovima",
+ del_qr:"Ukloniti nagradu? U dnevniku ostaje.",rew_hint:"Gost vidi nagrade u odeljku «Bodovi». Daje ih kasir, bodovi se skidaju automatski.",l_earn:"dodavanje",l_reward:"nagrada"});
+Object.assign(T.en,{rule2:"You earn points for drinks. To get a reward, show your QR code at the counter.",avail:"available",need:"need",show_qr_r:"Show this code to the cashier, they will give you the reward and deduct the points.",
+ tab_earn:"Add points",tab_reward:"Give reward",give:"Give",given:"Given",drinks:"Drinks",rewards_l:"Rewards",add_reward:"Add reward",price_lbl:"Price in points",
+ del_qr:"Remove this reward? It stays in the log.",rew_hint:"Guests see rewards under Points. The cashier hands them out and points are deducted automatically.",l_earn:"points added",l_reward:"reward"});
 const DEF_DRINKS=[
  {id:"d1",pts:15,name:{ru:"Чай в чайнике",sr:"Čaj u čajniku",en:"Pot of tea"}},
  {id:"d2",pts:25,name:{ru:"Гунфу ча",sr:"Gongfu ča",en:"Gongfu cha"}},
@@ -272,54 +287,72 @@ const DEF_DRINKS=[
 ];
 if(!S.drinks)S.drinks=DEF_DRINKS.map(d=>({...d,active:true}));
 if(!S.log)S.log=[];
+if(!S.rewards)S.rewards=REWARDS.map(r=>({id:r.id,pts:r.cost,name:r.name,active:true}));
 if(!S.role)S.role="guest";
-let CART={},SCANNED=false,EDIT=null;
+let CART={},SCANNED=false,EDIT=null,CMODE="earn",RSEL=null,MLIST="drinks";
 const esc=x=>String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const DN=d=>esc(d.name[S.lang]||d.name.ru);
 const cartPts=()=>Object.entries(CART).reduce((a,[id,q])=>a+q*(S.drinks.find(d=>d.id==id)||{pts:0}).pts,0);
-function setRole(r){S.role=r;S.tab=r=="guest"?"home":"cashier";CART={};SCANNED=false;EDIT=null;save();render();window.scrollTo(0,0)}
+function setRole(r){S.role=r;S.tab=r=="guest"?"home":"cashier";CART={};SCANNED=false;EDIT=null;RSEL=null;save();render();window.scrollTo(0,0)}
 function roles(){const e=document.getElementById("roles");if(!S.phone){e.innerHTML="";return}
  e.innerHTML=["guest","cashier","admin"].map(r=>`<button class="${S.role==r?"on":""}" onclick="setRole('${r}')">${t("r_"+r)}</button>`).join("")}
-function scanQR(){SCANNED=true;CART={};render()}
+function scanQR(){SCANNED=true;CART={};RSEL=null;CMODE="earn";render()}
+function endGuest(){SCANNED=false;CART={};RSEL=null;render()}
 function addD(id,n){CART[id]=Math.max(0,(CART[id]||0)+n);if(!CART[id])delete CART[id];render()}
+function setCM(m){CMODE=m;RSEL=null;render()}
+function pickR(id){const r=S.rewards.find(x=>x.id==id);if(S.points<r.pts){toast(t("not_enough"));return}RSEL=RSEL==id?null:id;render()}
+const stamp=()=>today()+" "+new Date().toTimeString().slice(0,5);
 function accrue(){const p=cartPts();if(!p){toast(t("nothing"));return}
  S.points+=p;S.history.push({k:"purchase",v:p,d:today()});
- S.log.push({d:today()+" "+new Date().toTimeString().slice(0,5),who:t("cashier_name"),guest:S.phone,items:Object.entries(CART),pts:p});
- CART={};SCANNED=false;save();render();toast(t("accrued")+": +"+p+" "+t("pts"))}
+ S.log.push({d:stamp(),who:t("cashier_name"),guest:S.phone,type:"earn",items:Object.entries(CART),pts:p});
+ CART={};save();render();toast(t("accrued")+": +"+p+" "+t("pts"))}
+function giveR(){const r=S.rewards.find(x=>x.id==RSEL);if(!r||S.points<r.pts)return;
+ S.points-=r.pts;S.history.push({k:"reward",v:-r.pts,d:today()});
+ S.log.push({d:stamp(),who:t("cashier_name"),guest:S.phone,type:"reward",items:[[r.id,1]],pts:-r.pts});
+ RSEL=null;save();render();toast(t("given")+": "+DN(r))}
+const LST=()=>S[MLIST];
+function setML(m){MLIST=m;EDIT=null;render()}
 function editD(id){EDIT=id;render();window.scrollTo(0,0)}
 function saveD(){const g=k=>document.getElementById(k).value.trim();const ru=g("f_ru"),pts=parseInt(g("f_pts"),10);
  if(!ru||!(pts>0)){toast(t("need_name"));return}
  const name={ru,sr:g("f_sr")||ru,en:g("f_en")||ru};
- if(EDIT=="new")S.drinks.push({id:"d"+Date.now(),pts,name,active:true});else Object.assign(S.drinks.find(d=>d.id==EDIT),{pts,name});
+ if(EDIT=="new")LST().push({id:(MLIST=="drinks"?"d":"r")+Date.now(),pts,name,active:true});else Object.assign(LST().find(d=>d.id==EDIT),{pts,name});
  EDIT=null;save();render();toast(t("saved"))}
-function delD(id){if(!confirm(t("del_q")))return;S.drinks.find(d=>d.id==id).active=false;save();render()}
-function restD(id){S.drinks.find(d=>d.id==id).active=true;save();render()}
+function delD(id){if(!confirm(t(MLIST=="drinks"?"del_q":"del_qr")))return;LST().find(d=>d.id==id).active=false;save();render()}
+function restD(id){LST().find(d=>d.id==id).active=true;save();render()}
+const findAny=id=>S.drinks.find(x=>x.id==id)||S.rewards.find(x=>x.id==id);
 Object.assign(V,{
  cashier(){
   if(!SCANNED)return `<h1>${t("cashier")}</h1><div class="card qr"><div style="font-size:54px;line-height:1">⌗</div><button class="btn" onclick="scanQR()">${t("scan")}</button><span class="muted">${t("scan_hint")}</span></div>`;
-  const p=cartPts();
-  return `<h1>${t("cashier")}</h1>
+  const head=`<h1>${t("cashier")}</h1>
   <div class="card guest"><div><div class="muted">${t("guest_lbl")}</div><b>${esc(S.phone)}</b></div><div style="text-align:right"><div class="muted">${t("balance")}</div><b>${S.points} ${t("pts")}</b></div></div>
-  <h2>${t("pick")}</h2>
-  <div class="tiles">${S.drinks.filter(d=>d.active).map(d=>{const q=CART[d.id]||0;return `<div class="tile ${q?"sel":""}" onclick="addD('${d.id}',1)">
-   ${q?`<div class="q">×${q}</div>`:""}<b>${DN(d)}</b><span>+${d.pts}</span>${q?`<button class="minus-b" onclick="event.stopPropagation();addD('${d.id}',-1)">−</button>`:""}</div>`}).join("")}</div>
-  <div class="paybar"><div class="sum">+${p}</div><button class="btn" ${p?"":"disabled"} onclick="accrue()">${t("confirm")}</button></div>
-  <p class="muted" style="text-align:center;margin:-90px 0 110px"><a href="#" onclick="SCANNED=false;CART={};render();return false" style="color:var(--muted)">${t("cancel_g")}</a></p>`},
+  <div class="seg"><button class="${CMODE=="earn"?"on":""}" onclick="setCM('earn')">${t("tab_earn")}</button><button class="${CMODE=="reward"?"on":""}" onclick="setCM('reward')">${t("tab_reward")}</button></div>`;
+  const foot=`<p class="muted" style="text-align:center;margin:-90px 0 110px"><a href="#" onclick="endGuest();return false" style="color:var(--muted)">${t("cancel_g")}</a></p>`;
+  if(CMODE=="earn"){const p=cartPts();
+   return head+`<div class="tiles">${S.drinks.filter(d=>d.active).map(d=>{const q=CART[d.id]||0;return `<div class="tile ${q?"sel":""}" onclick="addD('${d.id}',1)">
+    ${q?`<div class="q">×${q}</div>`:""}<b>${DN(d)}</b><span>+${d.pts}</span>${q?`<button class="minus-b" onclick="event.stopPropagation();addD('${d.id}',-1)">−</button>`:""}</div>`}).join("")}</div>
+    <div class="paybar"><div class="sum">+${p}</div><button class="btn" ${p?"":"disabled"} onclick="accrue()">${t("confirm")}</button></div>`+foot}
+  const r=RSEL&&S.rewards.find(x=>x.id==RSEL);
+  return head+`<div class="tiles">${S.rewards.filter(x=>x.active).sort((a,b)=>a.pts-b.pts).map(x=>{const ok=S.points>=x.pts;return `<div class="tile ${RSEL==x.id?"sel":""} ${ok?"":"off"}" onclick="pickR('${x.id}')">
+    <b>${DN(x)}</b><span>${x.pts} ${t("pts")}${ok?"":" · "+t("need")+" "+(x.pts-S.points)}</span></div>`}).join("")}</div>
+    <div class="paybar"><div class="sum">${r?"−"+r.pts:"0"}</div><button class="btn" ${r?"":"disabled"} onclick="giveR()">${t("give")}</button></div>`+foot},
  menu(){
-  if(EDIT){const d=EDIT=="new"?{pts:"",name:{ru:"",sr:"",en:""}}:S.drinks.find(x=>x.id==EDIT);
-   return `<h1>${EDIT=="new"?t("add_drink"):t("edit")}</h1><div class="card form">
+  const isD=MLIST=="drinks";
+  const seg=`<div class="seg"><button class="${isD?"on":""}" onclick="setML('drinks')">${t("drinks")}</button><button class="${isD?"":"on"}" onclick="setML('rewards')">${t("rewards_l")}</button></div>`;
+  if(EDIT){const d=EDIT=="new"?{pts:"",name:{ru:"",sr:"",en:""}}:LST().find(x=>x.id==EDIT);
+   return `<h1>${EDIT=="new"?t(isD?"add_drink":"add_reward"):t("edit")}</h1><div class="card form">
     <label>${t("n_ru")}</label><input id="f_ru" value="${esc(d.name.ru)}">
     <label>${t("n_sr")}</label><input id="f_sr" value="${esc(d.name.sr)}">
     <label>${t("n_en")}</label><input id="f_en" value="${esc(d.name.en)}">
-    <label>${t("points_lbl")}</label><input id="f_pts" type="number" inputmode="numeric" min="1" value="${d.pts}">
+    <label>${t(isD?"points_lbl":"price_lbl")}</label><input id="f_pts" type="number" inputmode="numeric" min="1" value="${d.pts}">
     <button class="btn" onclick="saveD()">${t("save")}</button><button class="btn ghost" style="margin-top:8px" onclick="EDIT=null;render()">${t("cancel_e")}</button></div>`}
-  const act=S.drinks.filter(d=>d.active),hid=S.drinks.filter(d=>!d.active);
-  return `<h1>${t("menu")}</h1><button class="btn" style="margin-bottom:14px" onclick="editD('new')">+ ${t("add_drink")}</button>
-  <div class="card">${act.map(d=>`<div class="drow"><div><b>${DN(d)}</b><div class="muted">+${d.pts} ${t("pts")}</div></div>
+  const act=LST().filter(d=>d.active),hid=LST().filter(d=>!d.active);
+  return `<h1>${t("menu")}</h1>${seg}<button class="btn" style="margin-bottom:14px" onclick="editD('new')">+ ${t(isD?"add_drink":"add_reward")}</button>
+  <div class="card">${act.map(d=>`<div class="drow"><div><b>${DN(d)}</b><div class="muted">${isD?"+"+d.pts:d.pts} ${t("pts")}</div></div>
    <div class="acts"><button class="btn small ghost" onclick="editD('${d.id}')">${t("edit")}</button><button class="btn small ghost" onclick="delD('${d.id}')">${t("del")}</button></div></div>`).join("")}</div>
-  <p class="muted" style="margin-bottom:14px">${t("menu_hint")}</p>
-  ${hid.length?`<h2>${t("hidden")}</h2><div class="card">${hid.map(d=>`<div class="drow"><div class="muted">${DN(d)} · +${d.pts}</div><button class="btn small ghost" onclick="restD('${d.id}')">${t("restore")}</button></div>`).join("")}</div>`:""}`},
- log(){return `<h1>${t("log")}</h1>`+(S.log.length?`<div class="card history">${S.log.slice().reverse().map(l=>`<div><span>${esc(l.d)} · ${esc(l.who)}<br><span class="muted">${l.items.map(([id,q])=>{const d=S.drinks.find(x=>x.id==id);return (d?DN(d):"?")+(q>1?" ×"+q:"")}).join(", ")}</span></span><span class="plus">+${l.pts}</span></div>`).join("")}</div>`:`<p class="muted">${t("empty_log")}</p>`)}
+  <p class="muted" style="margin-bottom:14px">${t(isD?"menu_hint":"rew_hint")}</p>
+  ${hid.length?`<h2>${t("hidden")}</h2><div class="card">${hid.map(d=>`<div class="drow"><div class="muted">${DN(d)} · ${d.pts}</div><button class="btn small ghost" onclick="restD('${d.id}')">${t("restore")}</button></div>`).join("")}</div>`:""}`},
+ log(){return `<h1>${t("log")}</h1>`+(S.log.length?`<div class="card history">${S.log.slice().reverse().map(l=>`<div><span>${esc(l.d)} · ${esc(l.who)} · ${t(l.type=="reward"?"l_reward":"l_earn")}<br><span class="muted">${l.items.map(([id,q])=>{const d=findAny(id);return (d?DN(d):"?")+(q>1?" ×"+q:"")}).join(", ")}</span></span><span class="${l.pts>0?"plus":"minus"}">${l.pts>0?"+":""}${l.pts}</span></div>`).join("")}</div>`:`<p class="muted">${t("empty_log")}</p>`)}
 });
 function sendLink(){const v=document.getElementById("em").value.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){toast(t("bad_email"));return}S.pending=v;S.step="sent";save();render()}
 function openLink(){S.phone=S.pending;S.step="email";S.tab="home";save();render()}
