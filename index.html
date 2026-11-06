@@ -67,6 +67,22 @@
   .weights button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
   .side{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;text-align:right}
   a.btn{text-align:center;text-decoration:none}
+  .roles{display:flex;gap:4px;justify-content:center;padding:8px 20px 0}
+  .roles button{border:1px dashed #c9c9c9;background:#fff;border-radius:4px;padding:4px 10px;font-size:12px;color:var(--muted);cursor:pointer;font-family:inherit}
+  .roles button.on{border-style:solid;border-color:var(--ink);color:var(--ink);font-weight:600}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:110px}
+  .tile{position:relative;border:1px solid var(--line);border-radius:4px;padding:14px 12px;background:#fff;cursor:pointer;min-height:84px;display:flex;flex-direction:column;justify-content:space-between;user-select:none}
+  .tile.sel{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+  .tile b{font-size:15px;line-height:1.25}.tile span{font-size:13px;color:var(--muted)}
+  .tile .q{position:absolute;top:-8px;right:-8px;background:var(--ink);color:#fff;border-radius:12px;min-width:24px;height:24px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 6px}
+  .tile .minus-b{position:absolute;bottom:8px;right:8px;border:1px solid var(--line);background:#fff;border-radius:4px;width:28px;height:28px;font-size:16px;cursor:pointer}
+  .paybar{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);width:100%;max-width:440px;background:#fff;border-top:1px solid var(--line);padding:10px 20px;display:flex;gap:12px;align-items:center}
+  .paybar .sum{font-size:20px;font-weight:700;white-space:nowrap}
+  .drow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .drow:last-child{border:0}.drow .acts{display:flex;gap:6px;flex-shrink:0}
+  .form label{display:block;font-size:13px;color:var(--muted);margin-top:4px}
+  .form input{margin:4px 0 10px;font-size:15px;padding:11px}
+  .guest{display:flex;justify-content:space-between;align-items:center}
   .plus{color:#00a901;font-weight:600}.minus{color:#ab2e31;font-weight:600}
 </style>
 </head>
@@ -77,6 +93,7 @@
     <div class="langs" id="langs"></div>
   </header>
   <div class="proto" data-t="proto"></div>
+  <div class="roles" id="roles"></div>
   <main id="view"></main>
   <nav id="nav"></nav>
   <div class="toast" id="toast"></div>
@@ -171,7 +188,7 @@ function toast(m){const e=document.getElementById("toast");e.textContent=m;e.cla
 function langs(){document.getElementById("langs").innerHTML=["ru","sr","en"].map(l=>`<button class="${S.lang==l?"on":""}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join("");document.documentElement.lang=S.lang;document.querySelector('[data-t=proto]').textContent=t("proto")}
 function setLang(l){S.lang=l;save();render()}
 function nav(){const n=document.getElementById("nav");if(!S.phone){n.style.display="none";return}n.style.display="flex";
- const items=[["home","☗"],["rewards","★"],["events","◷"],["teas","❦"]];
+ const items=S.role=="guest"?[["home","☗"],["rewards","★"],["events","◷"],["teas","❦"]]:[["cashier","⌗"],["log","☰"]].concat(S.role=="admin"?[["menu","✎"]]:[]);
  n.innerHTML=items.map(([k,i])=>`<button class="${S.tab==k?"on":""}" onclick="go('${k}')"><span class="ic">${i}</span>${t(k)}</button>`).join("")}
 function go(k){S.tab=k;save();render();window.scrollTo(0,0)}
 function qrSVG(text){if(typeof qrcode==="undefined")return `<div class="muted">QR</div>`;const q=qrcode(0,"M");q.addData(text);q.make();return q.createSvgTag(5,0)}
@@ -213,6 +230,84 @@ const V={
    ${btn("")}`:""}<span class="more">${o?t("less")+" ▴":t("more")+" ▾"}</span></div>`}).join("")+
   `<button class="btn ${S.notify?"ghost":""}" onclick="toggleNotify()">${S.notify?"✓ "+t("notify_on"):t("notify")}</button>`}
 };
+
+Object.assign(T.ru,{r_guest:"Гость",r_cashier:"Кассир",r_admin:"Админ",cashier:"Касса",menu:"Меню",log:"Журнал",
+ scan:"Сканировать QR гостя",scan_hint:"В прототипе сканер имитируется: нажмите кнопку.",guest_lbl:"Гость",balance:"баланс",
+ pick:"Выберите напитки",confirm:"Начислить",nothing:"Выберите хотя бы один напиток",accrued:"Начислено",cancel_g:"Другой гость",
+ add_drink:"Добавить напиток",edit:"Изменить",del:"Удалить",save:"Сохранить",cancel_e:"Отмена",restore:"Вернуть",hidden:"Скрытые напитки",
+ n_ru:"Название (русский)",n_sr:"Название (српски)",n_en:"Название (English)",points_lbl:"Баллы за напиток",del_q:"Убрать напиток из меню? В журнале он останется.",
+ need_name:"Заполните название и баллы",saved:"Сохранено",empty_log:"Начислений пока нет",cashier_name:"Евгений",menu_hint:"Удалённый напиток пропадает с плиток кассы, но остаётся в журнале."});
+Object.assign(T.sr,{r_guest:"Gost",r_cashier:"Kasir",r_admin:"Admin",cashier:"Kasa",menu:"Meni",log:"Dnevnik",
+ scan:"Skeniraj QR gosta",scan_hint:"U prototipu je skener simuliran: pritisnite dugme.",guest_lbl:"Gost",balance:"stanje",
+ pick:"Izaberite pića",confirm:"Dodaj bodove",nothing:"Izaberite bar jedno piće",accrued:"Dodato",cancel_g:"Drugi gost",
+ add_drink:"Dodaj piće",edit:"Izmeni",del:"Obriši",save:"Sačuvaj",cancel_e:"Otkaži",restore:"Vrati",hidden:"Skrivena pića",
+ n_ru:"Naziv (ruski)",n_sr:"Naziv (srpski)",n_en:"Naziv (engleski)",points_lbl:"Bodovi za piće",del_q:"Ukloniti piće iz menija? U dnevniku ostaje.",
+ need_name:"Unesite naziv i bodove",saved:"Sačuvano",empty_log:"Još nema dodavanja",cashier_name:"Evgenij",menu_hint:"Obrisano piće nestaje sa kase, ali ostaje u dnevniku."});
+Object.assign(T.en,{r_guest:"Guest",r_cashier:"Cashier",r_admin:"Admin",cashier:"Till",menu:"Menu",log:"Log",
+ scan:"Scan guest QR",scan_hint:"The scanner is simulated in the prototype: tap the button.",guest_lbl:"Guest",balance:"balance",
+ pick:"Pick drinks",confirm:"Add points",nothing:"Pick at least one drink",accrued:"Added",cancel_g:"Another guest",
+ add_drink:"Add drink",edit:"Edit",del:"Delete",save:"Save",cancel_e:"Cancel",restore:"Restore",hidden:"Hidden drinks",
+ n_ru:"Name (Russian)",n_sr:"Name (Serbian)",n_en:"Name (English)",points_lbl:"Points per drink",del_q:"Remove this drink from the menu? It stays in the log.",
+ need_name:"Fill in the name and points",saved:"Saved",empty_log:"No points added yet",cashier_name:"Evgeniy",menu_hint:"A deleted drink disappears from the till but stays in the log."});
+const DEF_DRINKS=[
+ {id:"d1",pts:15,name:{ru:"Чай в чайнике",sr:"Čaj u čajniku",en:"Pot of tea"}},
+ {id:"d2",pts:25,name:{ru:"Гунфу ча",sr:"Gongfu ča",en:"Gongfu cha"}},
+ {id:"d3",pts:15,name:{ru:"Пуэр в чайнике",sr:"Puer u čajniku",en:"Pot of puer"}},
+ {id:"d4",pts:15,name:{ru:"Матча латте",sr:"Matcha latte",en:"Matcha latte"}},
+ {id:"d5",pts:10,name:{ru:"Матча классическая",sr:"Klasična matcha",en:"Classic matcha"}},
+ {id:"d6",pts:40,name:{ru:"Церемония на двоих",sr:"Ceremonija za dvoje",en:"Ceremony for two"}}
+];
+if(!S.drinks)S.drinks=DEF_DRINKS.map(d=>({...d,active:true}));
+if(!S.log)S.log=[];
+if(!S.role)S.role="guest";
+let CART={},SCANNED=false,EDIT=null;
+const esc=x=>String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const DN=d=>esc(d.name[S.lang]||d.name.ru);
+const cartPts=()=>Object.entries(CART).reduce((a,[id,q])=>a+q*(S.drinks.find(d=>d.id==id)||{pts:0}).pts,0);
+function setRole(r){S.role=r;S.tab=r=="guest"?"home":"cashier";CART={};SCANNED=false;EDIT=null;save();render();window.scrollTo(0,0)}
+function roles(){const e=document.getElementById("roles");if(!S.phone){e.innerHTML="";return}
+ e.innerHTML=["guest","cashier","admin"].map(r=>`<button class="${S.role==r?"on":""}" onclick="setRole('${r}')">${t("r_"+r)}</button>`).join("")}
+function scanQR(){SCANNED=true;CART={};render()}
+function addD(id,n){CART[id]=Math.max(0,(CART[id]||0)+n);if(!CART[id])delete CART[id];render()}
+function accrue(){const p=cartPts();if(!p){toast(t("nothing"));return}
+ S.points+=p;S.history.push({k:"purchase",v:p,d:today()});
+ S.log.push({d:today()+" "+new Date().toTimeString().slice(0,5),who:t("cashier_name"),guest:S.phone,items:Object.entries(CART),pts:p});
+ CART={};SCANNED=false;save();render();toast(t("accrued")+": +"+p+" "+t("pts"))}
+function editD(id){EDIT=id;render();window.scrollTo(0,0)}
+function saveD(){const g=k=>document.getElementById(k).value.trim();const ru=g("f_ru"),pts=parseInt(g("f_pts"),10);
+ if(!ru||!(pts>0)){toast(t("need_name"));return}
+ const name={ru,sr:g("f_sr")||ru,en:g("f_en")||ru};
+ if(EDIT=="new")S.drinks.push({id:"d"+Date.now(),pts,name,active:true});else Object.assign(S.drinks.find(d=>d.id==EDIT),{pts,name});
+ EDIT=null;save();render();toast(t("saved"))}
+function delD(id){if(!confirm(t("del_q")))return;S.drinks.find(d=>d.id==id).active=false;save();render()}
+function restD(id){S.drinks.find(d=>d.id==id).active=true;save();render()}
+Object.assign(V,{
+ cashier(){
+  if(!SCANNED)return `<h1>${t("cashier")}</h1><div class="card qr"><div style="font-size:54px;line-height:1">⌗</div><button class="btn" onclick="scanQR()">${t("scan")}</button><span class="muted">${t("scan_hint")}</span></div>`;
+  const p=cartPts();
+  return `<h1>${t("cashier")}</h1>
+  <div class="card guest"><div><div class="muted">${t("guest_lbl")}</div><b>${esc(S.phone)}</b></div><div style="text-align:right"><div class="muted">${t("balance")}</div><b>${S.points} ${t("pts")}</b></div></div>
+  <h2>${t("pick")}</h2>
+  <div class="tiles">${S.drinks.filter(d=>d.active).map(d=>{const q=CART[d.id]||0;return `<div class="tile ${q?"sel":""}" onclick="addD('${d.id}',1)">
+   ${q?`<div class="q">×${q}</div>`:""}<b>${DN(d)}</b><span>+${d.pts}</span>${q?`<button class="minus-b" onclick="event.stopPropagation();addD('${d.id}',-1)">−</button>`:""}</div>`}).join("")}</div>
+  <div class="paybar"><div class="sum">+${p}</div><button class="btn" ${p?"":"disabled"} onclick="accrue()">${t("confirm")}</button></div>
+  <p class="muted" style="text-align:center;margin:-90px 0 110px"><a href="#" onclick="SCANNED=false;CART={};render();return false" style="color:var(--muted)">${t("cancel_g")}</a></p>`},
+ menu(){
+  if(EDIT){const d=EDIT=="new"?{pts:"",name:{ru:"",sr:"",en:""}}:S.drinks.find(x=>x.id==EDIT);
+   return `<h1>${EDIT=="new"?t("add_drink"):t("edit")}</h1><div class="card form">
+    <label>${t("n_ru")}</label><input id="f_ru" value="${esc(d.name.ru)}">
+    <label>${t("n_sr")}</label><input id="f_sr" value="${esc(d.name.sr)}">
+    <label>${t("n_en")}</label><input id="f_en" value="${esc(d.name.en)}">
+    <label>${t("points_lbl")}</label><input id="f_pts" type="number" inputmode="numeric" min="1" value="${d.pts}">
+    <button class="btn" onclick="saveD()">${t("save")}</button><button class="btn ghost" style="margin-top:8px" onclick="EDIT=null;render()">${t("cancel_e")}</button></div>`}
+  const act=S.drinks.filter(d=>d.active),hid=S.drinks.filter(d=>!d.active);
+  return `<h1>${t("menu")}</h1><button class="btn" style="margin-bottom:14px" onclick="editD('new')">+ ${t("add_drink")}</button>
+  <div class="card">${act.map(d=>`<div class="drow"><div><b>${DN(d)}</b><div class="muted">+${d.pts} ${t("pts")}</div></div>
+   <div class="acts"><button class="btn small ghost" onclick="editD('${d.id}')">${t("edit")}</button><button class="btn small ghost" onclick="delD('${d.id}')">${t("del")}</button></div></div>`).join("")}</div>
+  <p class="muted" style="margin-bottom:14px">${t("menu_hint")}</p>
+  ${hid.length?`<h2>${t("hidden")}</h2><div class="card">${hid.map(d=>`<div class="drow"><div class="muted">${DN(d)} · +${d.pts}</div><button class="btn small ghost" onclick="restD('${d.id}')">${t("restore")}</button></div>`).join("")}</div>`:""}`},
+ log(){return `<h1>${t("log")}</h1>`+(S.log.length?`<div class="card history">${S.log.slice().reverse().map(l=>`<div><span>${esc(l.d)} · ${esc(l.who)}<br><span class="muted">${l.items.map(([id,q])=>{const d=S.drinks.find(x=>x.id==id);return (d?DN(d):"?")+(q>1?" ×"+q:"")}).join(", ")}</span></span><span class="plus">+${l.pts}</span></div>`).join("")}</div>`:`<p class="muted">${t("empty_log")}</p>`)}
+});
 function sendCode(){const v=document.getElementById("ph").value.replace(/\s/g,"");if(v.length<9){toast(t("phone"));return}S.pending=v;S.step="code";save();render()}
 function checkCode(){const v=document.getElementById("cd").value;if(!/^\d{4}$/.test(v)){toast(t("code_hint"));return}S.phone=S.pending;S.step="phone";S.tab="home";save();render()}
 function logout(){S.phone=null;save();render()}
@@ -221,7 +316,7 @@ function buy(){S.points+=35;S.history.push({k:"purchase",v:35,d:today()});save()
 function redeem(id){const r=REWARDS.find(x=>x.id==id);if(S.points<r.cost)return;S.points-=r.cost;S.history.push({k:"reward",v:-r.cost,d:today()});save();render();toast(t("redeemed")+": "+L(r.name))}
 function book(id,on){if(on)S.booked[id]=true;else delete S.booked[id];save();render();toast(on?t("signed_ok"):t("cancel_ok"))}
 function toggleNotify(){S.notify=!S.notify;save();render()}
-function render(){document.body.classList.toggle("out",!S.phone);langs();document.getElementById("view").innerHTML=S.phone?V[S.tab]():V.login();nav()}
+function render(){document.body.classList.toggle("out",!S.phone);langs();roles();if(S.phone&&S.role=="guest"&&!["home","rewards","events","teas"].includes(S.tab))S.tab="home";if(S.phone&&S.role!="guest"&&!["cashier","log","menu"].includes(S.tab))S.tab="cashier";if(S.role=="cashier"&&S.tab=="menu")S.tab="cashier";document.getElementById("view").innerHTML=S.phone?V[S.tab]():V.login();nav()}
 render();
 </script>
 </body>
