@@ -196,12 +196,15 @@ function nextGoal(){const c=REWARDS.map(r=>r.cost).find(c=>c>S.points)||REWARDS[
 const V={
  login(){
   const top=`<img class="mark" src="assets/logo-square.png" alt="t.element">`;
-  if(S.step=="phone")return `<div class="login">${top}<h1>${t("welcome")}</h1><p class="muted">${t("login_hint")}</p>
-   <input id="ph" type="tel" placeholder="+381 6x xxx xxxx" value="+381 ">
-   <button class="btn" onclick="sendCode()">${t("get_code")}</button></div>`;
-  return `<div class="login">${top}<h1>${t("code")}</h1><p class="muted">${t("code_hint")}</p>
-   <input id="cd" inputmode="numeric" maxlength="4" placeholder="••••">
-   <button class="btn" onclick="checkCode()">${t("enter")}</button></div>`},
+  if(S.step!="sent")return `<div class="login">${top}<h1>${t("welcome")}</h1><p class="muted">${t("login_hint")}</p>
+   <input id="em" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com" value="${esc(S.pending||"")}">
+   <button class="btn" onclick="sendLink()">${t("get_link")}</button>
+   <p class="muted" style="margin:14px 0">${t("or")}</p>
+   <button class="btn ghost" onclick="tgLogin()">✈ ${t("tg")}</button></div>`;
+  return `<div class="login">${top}<h1>${t("check_mail")}</h1><p class="muted">${t("sent_to")}<br><b style="color:var(--ink)">${esc(S.pending)}</b></p>
+   <p class="muted">${t("link_hint")}</p>
+   <button class="btn" onclick="openLink()">${t("open_link")}</button>
+   <p class="muted" style="margin-top:16px"><a href="#" onclick="S.step='email';save();render();return false" style="color:var(--muted)">${t("change_email")}</a></p></div>`},
  home(){const goal=nextGoal(),pct=Math.min(100,Math.round(S.points/goal*100));
   return `<h1>${t("hello")}!</h1>
   <div class="card points"><div class="sub">${t("your_points")}</div><div class="big">${S.points}</div>
@@ -249,6 +252,16 @@ Object.assign(T.en,{r_guest:"Guest",r_cashier:"Cashier",r_admin:"Admin",cashier:
  add_drink:"Add drink",edit:"Edit",del:"Delete",save:"Save",cancel_e:"Cancel",restore:"Restore",hidden:"Hidden drinks",
  n_ru:"Name (Russian)",n_sr:"Name (Serbian)",n_en:"Name (English)",points_lbl:"Points per drink",del_q:"Remove this drink from the menu? It stays in the log.",
  need_name:"Fill in the name and points",saved:"Saved",empty_log:"No points added yet",cashier_name:"Evgeniy",menu_hint:"A deleted drink disappears from the till but stays in the log."});
+
+Object.assign(T.ru,{login_hint:"Войдите по почте. Баллы и записи привяжутся к ней. Пароль не нужен.",email:"Ваша почта",get_link:"Получить ссылку для входа",
+ check_mail:"Проверьте почту",sent_to:"Мы отправили ссылку для входа на",link_hint:"В прототипе письмо не приходит, нажмите кнопку ниже.",open_link:"Открыть ссылку из письма",
+ change_email:"Указать другую почту",or:"или",tg:"Войти через Telegram",bad_email:"Проверьте адрес почты"});
+Object.assign(T.sr,{login_hint:"Prijavite se e-poštom. Bodovi i prijave biće vezani za nju. Lozinka nije potrebna.",email:"Vaša e-pošta",get_link:"Pošalji link za prijavu",
+ check_mail:"Proverite e-poštu",sent_to:"Poslali smo link za prijavu na",link_hint:"U prototipu pismo ne stiže, pritisnite dugme ispod.",open_link:"Otvori link iz pisma",
+ change_email:"Druga adresa",or:"ili",tg:"Prijava preko Telegrama",bad_email:"Proverite adresu e-pošte"});
+Object.assign(T.en,{login_hint:"Sign in with your email. Points and bookings will be linked to it. No password needed.",email:"Your email",get_link:"Email me a sign-in link",
+ check_mail:"Check your inbox",sent_to:"We sent a sign-in link to",link_hint:"In the prototype no email is sent, tap the button below.",open_link:"Open the link from the email",
+ change_email:"Use another email",or:"or",tg:"Sign in with Telegram",bad_email:"Check the email address"});
 const DEF_DRINKS=[
  {id:"d1",pts:15,name:{ru:"Чай в чайнике",sr:"Čaj u čajniku",en:"Pot of tea"}},
  {id:"d2",pts:25,name:{ru:"Гунфу ча",sr:"Gongfu ča",en:"Gongfu cha"}},
@@ -308,6 +321,9 @@ Object.assign(V,{
   ${hid.length?`<h2>${t("hidden")}</h2><div class="card">${hid.map(d=>`<div class="drow"><div class="muted">${DN(d)} · +${d.pts}</div><button class="btn small ghost" onclick="restD('${d.id}')">${t("restore")}</button></div>`).join("")}</div>`:""}`},
  log(){return `<h1>${t("log")}</h1>`+(S.log.length?`<div class="card history">${S.log.slice().reverse().map(l=>`<div><span>${esc(l.d)} · ${esc(l.who)}<br><span class="muted">${l.items.map(([id,q])=>{const d=S.drinks.find(x=>x.id==id);return (d?DN(d):"?")+(q>1?" ×"+q:"")}).join(", ")}</span></span><span class="plus">+${l.pts}</span></div>`).join("")}</div>`:`<p class="muted">${t("empty_log")}</p>`)}
 });
+function sendLink(){const v=document.getElementById("em").value.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){toast(t("bad_email"));return}S.pending=v;S.step="sent";save();render()}
+function openLink(){S.phone=S.pending;S.step="email";S.tab="home";save();render()}
+function tgLogin(){S.phone="@telegram_guest";S.step="email";S.tab="home";save();render()}
 function sendCode(){const v=document.getElementById("ph").value.replace(/\s/g,"");if(v.length<9){toast(t("phone"));return}S.pending=v;S.step="code";save();render()}
 function checkCode(){const v=document.getElementById("cd").value;if(!/^\d{4}$/.test(v)){toast(t("code_hint"));return}S.phone=S.pending;S.step="phone";S.tab="home";save();render()}
 function logout(){S.phone=null;save();render()}
