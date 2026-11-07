@@ -112,7 +112,7 @@ const T={
   welcome:"Добро пожаловать в t.element",login_hint:"Войдите по номеру телефона. Баллы и записи привяжутся к нему.",phone:"Номер телефона",get_code:"Получить код",code:"Код из SMS",code_hint:"В прототипе подойдёт любой код из 4 цифр.",enter:"Войти",
   home:"Главная",rewards:"Баллы",events:"Афиша",teas:"Новинки",
   hello:"Привет",your_points:"Ваши баллы",to_next:"До бесплатного напитка",pts:"баллов",show_qr:"Покажите этот код на кассе",qr_hint:"Кассир отсканирует его, и баллы начислятся за покупку.",
-  sim:"Имитация покупки (для демонстрации)",sim_btn:"Купить напиток за 350 дин",earned:"Начислено",
+  earned:"Начислено",
   rule:"10 баллов за каждые 100 динаров. Баллы можно обменять на напитки.",
   redeem:"Обменять",not_enough:"Не хватает баллов",redeemed:"Готово! Покажите экран на кассе и получите",history:"История",
   seats_left:"Свободно мест",of:"из",signup:"Записаться",cancel:"Отменить запись",signed:"Вы записаны",full:"Мест нет",pay_cash:"Оплата на месте",signed_ok:"Вы записаны. Ждём вас!",cancel_ok:"Запись отменена, место освободилось.",
@@ -122,7 +122,7 @@ const T={
   welcome:"Dobro došli u t.element",login_hint:"Prijavite se brojem telefona. Bodovi i prijave biće vezani za njega.",phone:"Broj telefona",get_code:"Pošalji kod",code:"Kod iz SMS-a",code_hint:"U prototipu važi bilo koji kod od 4 cifre.",enter:"Prijavi se",
   home:"Početna",rewards:"Bodovi",events:"Događaji",teas:"Novo",
   hello:"Zdravo",your_points:"Vaši bodovi",to_next:"Do besplatnog pića",pts:"bodova",show_qr:"Pokažite ovaj kod na kasi",qr_hint:"Kasir će ga skenirati i bodovi će biti dodati za kupovinu.",
-  sim:"Simulacija kupovine (za demonstraciju)",sim_btn:"Kupi piće za 350 din",earned:"Dodato",
+  earned:"Dodato",
   rule:"10 bodova na svakih 100 dinara. Bodove možete zameniti za piće.",
   redeem:"Zameni",not_enough:"Nedovoljno bodova",redeemed:"Gotovo! Pokažite ekran na kasi i preuzmite",history:"Istorija",
   seats_left:"Slobodnih mesta",of:"od",signup:"Prijavi se",cancel:"Otkaži prijavu",signed:"Prijavljeni ste",full:"Nema mesta",pay_cash:"Plaćanje na licu mesta",signed_ok:"Prijavljeni ste. Vidimo se!",cancel_ok:"Prijava je otkazana, mesto je slobodno.",
@@ -132,7 +132,7 @@ const T={
   welcome:"Welcome to t.element",login_hint:"Sign in with your phone number. Points and bookings will be linked to it.",phone:"Phone number",get_code:"Get code",code:"SMS code",code_hint:"In the prototype any 4 digit code works.",enter:"Sign in",
   home:"Home",rewards:"Points",events:"Events",teas:"New",
   hello:"Hi",your_points:"Your points",to_next:"Until a free drink",pts:"points",show_qr:"Show this code at the counter",qr_hint:"The cashier scans it and you get points for the purchase.",
-  sim:"Purchase simulation (demo only)",sim_btn:"Buy a drink for 350 RSD",earned:"Earned",
+  earned:"Earned",
   rule:"10 points for every 100 dinars. Swap points for drinks.",
   redeem:"Redeem",not_enough:"Not enough points",redeemed:"Done! Show this screen at the counter to get",history:"History",
   seats_left:"Seats left",of:"of",signup:"Sign up",cancel:"Cancel booking",signed:"You're booked",full:"Fully booked",pay_cash:"Pay on site",signed_ok:"You're booked. See you there!",cancel_ok:"Booking cancelled, the seat is free again.",
@@ -218,7 +218,6 @@ const V={
   <div class="card points"><div class="sub">${t("your_points")}</div><div class="big">${S.points}</div>
    <div class="bar"><i style="width:${pct}%"></i></div><div class="sub">${t("to_next")}: ${Math.max(0,goal-S.points)} ${t("pts")}</div></div>
   <div class="card qr"><div class="box">${qrSVG("TELEMENT:"+S.phone)}</div><b>${t("show_qr")}</b><span class="muted">${t("qr_hint")}</span></div>
-  <div class="card"><div class="muted" style="margin-bottom:10px">${t("sim")}</div><button class="btn ghost" onclick="buy()">${t("sim_btn")}</button></div>
   <p class="muted" style="text-align:center;margin:16px 0"><a href="#" onclick="logout();return false" style="color:var(--muted)">${t("logout")}</a></p>`},
  rewards(){const R=S.rewards.filter(r=>r.active).sort((a,b)=>a.pts-b.pts);return `<h1>${t("rewards")}: ${S.points}</h1><p class="muted" style="margin-bottom:14px">${t("rule2")}</p>`+
   R.map(r=>{const ok=S.points>=r.pts;return `<div class="card reward row"><div><h3>${DN(r)}</h3><span class="pill">${r.pts} ${t("pts")}</span></div>
@@ -369,7 +368,6 @@ function sendCode(){const v=document.getElementById("ph").value.replace(/\s/g,""
 function checkCode(){const v=document.getElementById("cd").value;if(!/^\d{4}$/.test(v)){toast(t("code_hint"));return}S.phone=S.pending;S.step="phone";S.tab="home";save();render()}
 function logout(){S.phone=null;save();render()}
 function today(){const d=new Date();return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")}
-function buy(){S.points+=35;S.history.push({k:"purchase",v:35,d:today()});save();render();toast(t("earned")+": +35 "+t("pts"))}
 function redeem(id){const r=REWARDS.find(x=>x.id==id);if(S.points<r.cost)return;S.points-=r.cost;S.history.push({k:"reward",v:-r.cost,d:today()});save();render();toast(t("redeemed")+": "+L(r.name))}
 const MAXG=4;
 function seat(id,n){const e=EVENTS.find(x=>x.id==id),cur=+S.booked[id]||0,left=e.seats-e.taken-cur;
