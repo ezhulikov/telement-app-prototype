@@ -91,6 +91,12 @@
   .stepper button{width:40px;height:40px;border:1px solid var(--accent);background:#fff;border-radius:4px;font-size:20px;color:var(--accent);cursor:pointer;font-family:inherit}
   .stepper button:disabled{opacity:.35;cursor:default}
   .stepper b{min-width:18px;text-align:center;font-size:18px}
+  textarea{width:100%;padding:11px;border-radius:4px;font-family:inherit;border:1px solid var(--line);font-size:15px;margin:4px 0 10px;background:#fff;min-height:90px;resize:vertical}
+  .form .two{display:flex;gap:10px}.form .two>div{flex:1}
+  .prev{height:150px;border-radius:4px;background:#f4f4f4;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;margin:4px 0 8px}
+  .prev img{width:100%;height:100%;object-fit:cover}
+  .event.off{opacity:.6}
+  .warn{color:#ab2e31;font-weight:600;font-size:14px}
   .plus{color:#00a901;font-weight:600}.minus{color:#ab2e31;font-weight:600}
 </style>
 </head>
@@ -196,7 +202,7 @@ function toast(m){const e=document.getElementById("toast");e.textContent=m;e.cla
 function langs(){document.getElementById("langs").innerHTML=["ru","sr","en"].map(l=>`<button class="${S.lang==l?"on":""}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join("");document.documentElement.lang=S.lang;document.querySelector('[data-t=proto]').textContent=t("proto")}
 function setLang(l){S.lang=l;save();render()}
 function nav(){const n=document.getElementById("nav");if(!S.phone){n.style.display="none";return}n.style.display="flex";
- const items=S.role=="guest"?[["home","☗"],["rewards","★"],["events","◷"],["teas","❦"]]:[["cashier","⌗"],["log","☰"]].concat(S.role=="admin"?[["menu","✎"]]:[]);
+ const items=S.role=="guest"?[["home","☗"],["rewards","★"],["events","◷"],["teas","❦"]]:[["cashier","⌗"],["evs","◷"],["log","☰"]].concat(S.role=="admin"?[["menu","✎"]]:[]);
  n.innerHTML=items.map(([k,i])=>`<button class="${S.tab==k?"on":""}" onclick="go('${k}')"><span class="ic">${i}</span>${t(k)}</button>`).join("")}
 function go(k){S.tab=k;save();render();window.scrollTo(0,0)}
 function qrSVG(text){if(typeof qrcode==="undefined")return `<div class="muted">QR</div>`;const q=qrcode(0,"M");q.addData(text);q.make();return q.createSvgTag(5,0)}
@@ -370,13 +376,111 @@ function logout(){S.phone=null;save();render()}
 function today(){const d=new Date();return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")}
 function redeem(id){const r=REWARDS.find(x=>x.id==id);if(S.points<r.cost)return;S.points-=r.cost;S.history.push({k:"reward",v:-r.cost,d:today()});save();render();toast(t("redeemed")+": "+L(r.name))}
 const MAXG=4;
-function seat(id,n){const e=EVENTS.find(x=>x.id==id),cur=+S.booked[id]||0,left=e.seats-e.taken-cur;
- if(n>0&&(left<=0||cur>=MAXG))return;const v=Math.max(0,cur+n);
+function toggleNotify(){S.notify=!S.notify;save();render()}
+function render(){document.body.classList.toggle("out",!S.phone);langs();roles();if(S.phone&&S.role=="guest"&&!["home","rewards","events","teas"].includes(S.tab))S.tab="home";if(S.phone&&S.role!="guest"&&!["cashier","evs","log","menu"].includes(S.tab))S.tab="cashier";if(S.role=="cashier"&&S.tab=="menu")S.tab="cashier";document.getElementById("view").innerHTML=S.phone?V[S.tab]():V.login();nav()}
+// ===== Афиша: данные в S.events, редактирование для кассира и админа =====
+Object.assign(T.ru,{evs:"Афиша",add_ev:"Добавить мероприятие",f_photo:"Фото",no_photo:"Фото не выбрано",f_when:"Дата и время",f_price:"Цена, динаров",f_seats:"Всего мест",f_maxg:"Максимум мест на гостя",
+ d_ru:"Описание (русский)",d_sr:"Описание (српски)",d_en:"Описание (English)",lang_hint:"Сербский и английский можно не заполнять, тогда гость увидит русский текст.",
+ need_ev:"Заполните название, дату и число мест",seats_low:"Мест не может быть меньше, чем уже занято:",booked_l:"Записались",no_guests:"Пока никто не записался",
+ cancel_ev:"Отменить мероприятие",cancel_evq:"Отменить мероприятие? Записавшиеся гости увидят отмену.",del_evq:"Удалить мероприятие? Записей на него нет.",
+ cancelled:"Отменено",ev_off_g:"Мероприятие отменено. Приносим извинения.",past:"Прошедшие",back:"Назад",taken_l:"занято",no_events:"Скоро здесь появятся мероприятия.",too_big:"Не получилось сохранить фото, выберите поменьше.",
+ l_ev_new:"новое мероприятие",l_ev_edit:"изменено мероприятие",l_ev_cancel:"отменено мероприятие",l_ev_restore:"возвращено мероприятие",l_ev_del:"удалено мероприятие",din:"дин"});
+Object.assign(T.sr,{evs:"Događaji",add_ev:"Dodaj događaj",f_photo:"Fotografija",no_photo:"Fotografija nije izabrana",f_when:"Datum i vreme",f_price:"Cena, dinara",f_seats:"Ukupno mesta",f_maxg:"Najviše mesta po gostu",
+ d_ru:"Opis (ruski)",d_sr:"Opis (srpski)",d_en:"Opis (engleski)",lang_hint:"Srpski i engleski možete ostaviti prazne, gost će tada videti ruski tekst.",
+ need_ev:"Unesite naziv, datum i broj mesta",seats_low:"Mesta ne može biti manje nego što je zauzeto:",booked_l:"Prijavljeni",no_guests:"Još niko nije prijavljen",
+ cancel_ev:"Otkaži događaj",cancel_evq:"Otkazati događaj? Prijavljeni gosti će videti otkazivanje.",del_evq:"Obrisati događaj? Nema prijava.",
+ cancelled:"Otkazano",ev_off_g:"Događaj je otkazan. Izvinjavamo se.",past:"Prošli",back:"Nazad",taken_l:"zauzeto",no_events:"Uskoro ovde stižu događaji.",too_big:"Fotografija nije sačuvana, izaberite manju.",
+ l_ev_new:"novi događaj",l_ev_edit:"izmenjen događaj",l_ev_cancel:"otkazan događaj",l_ev_restore:"vraćen događaj",l_ev_del:"obrisan događaj",din:"din"});
+Object.assign(T.en,{evs:"Events",add_ev:"Add event",f_photo:"Photo",no_photo:"No photo chosen",f_when:"Date and time",f_price:"Price, RSD",f_seats:"Total seats",f_maxg:"Max seats per guest",
+ d_ru:"Description (Russian)",d_sr:"Description (Serbian)",d_en:"Description (English)",lang_hint:"Serbian and English can stay empty, guests will see the Russian text.",
+ need_ev:"Fill in the title, date and seats",seats_low:"Seats can't be fewer than already taken:",booked_l:"Booked",no_guests:"No bookings yet",
+ cancel_ev:"Cancel event",cancel_evq:"Cancel this event? Booked guests will see it's cancelled.",del_evq:"Delete this event? It has no bookings.",
+ cancelled:"Cancelled",ev_off_g:"This event is cancelled. We're sorry.",past:"Past",back:"Back",taken_l:"taken",no_events:"Events are coming soon.",too_big:"Couldn't save the photo, pick a smaller one.",
+ l_ev_new:"new event",l_ev_edit:"event edited",l_ev_cancel:"event cancelled",l_ev_restore:"event restored",l_ev_del:"event deleted",din:"RSD"});
+if(!S.events){const W=["2026-11-14T19:00","2026-11-22T17:00","2026-11-30T18:00"],P=[1200,1500,1000],
+ G=[[["ana.petrovic@gmail.com",2],["marko.j@yahoo.com",1],["@lena_tea",3]],[["nikola@gmail.com",2],["@ivan_puer",2],["milica.s@gmail.com",2],["olga@mail.ru",2]],[["@sasha_d",1],["jelena.m@gmail.com",2]]];
+ S.events=EVENTS.map((e,i)=>({id:e.id,img:e.img,when:W[i],title:e.title,desc:e.desc,price:P[i],seats:e.seats,maxg:4,status:"on",guests:G[i].map(([who,n])=>({who,n}))}))}
+let EVO=null,EVE=null,EIMG=null,EPAST=false;
+const LOC={ru:"ru-RU",sr:"sr-Latn-RS",en:"en-GB"};
+const EL=o=>esc((o&&(o[S.lang]||o.ru))||"");
+const evWhen=e=>{const d=new Date(e.when);return isNaN(d)?"":d.toLocaleString(LOC[S.lang],{weekday:"short",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})};
+const evTaken=e=>e.guests.reduce((a,g)=>a+g.n,0)+(+S.booked[e.id]||0);
+const isPast=e=>new Date(e.when).getTime()<Date.now()-3*3600e3;
+const evSort=a=>a.slice().sort((x,y)=>x.when<y.when?-1:1);
+const evLog=(act,e)=>S.log.push({d:stamp(),who:t("cashier_name"),type:"ev",act,title:e.title.ru,pts:0});
+function trySave(){try{save();return true}catch(_){toast(t("too_big"));return false}}
+function seat(id,n){const e=S.events.find(x=>x.id==id),cur=+S.booked[id]||0,left=e.seats-evTaken(e);
+ if(e.status!="on")return;if(n>0&&(left<=0||cur>=e.maxg))return;const v=Math.max(0,cur+n);
  if(v)S.booked[id]=v;else delete S.booked[id];save();render();
  toast(v==0?t("cancel_ok"):cur==0?t("signed_ok"):t("seats_mine")+": "+v)}
-function book(id,on){if(on)S.booked[id]=true;else delete S.booked[id];save();render();toast(on?t("signed_ok"):t("cancel_ok"))}
-function toggleNotify(){S.notify=!S.notify;save();render()}
-function render(){document.body.classList.toggle("out",!S.phone);langs();roles();if(S.phone&&S.role=="guest"&&!["home","rewards","events","teas"].includes(S.tab))S.tab="home";if(S.phone&&S.role!="guest"&&!["cashier","log","menu"].includes(S.tab))S.tab="cashier";if(S.role=="cashier"&&S.tab=="menu")S.tab="cashier";document.getElementById("view").innerHTML=S.phone?V[S.tab]():V.login();nav()}
+function evOpen(id){EVO=id;EVE=null;render();window.scrollTo(0,0)}
+function evEdit(id){EVE=id;EIMG=id=="new"?null:S.events.find(x=>x.id==id).img;render();window.scrollTo(0,0)}
+function evBack(){if(EVE&&EVE!="new"){EVE=null}else{EVE=null;EVO=null}render();window.scrollTo(0,0)}
+function evPhoto(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();
+ r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,900/im.width),c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+  c.getContext("2d").drawImage(im,0,0,c.width,c.height);EIMG=c.toDataURL("image/jpeg",.8);document.getElementById("fe_prev").innerHTML=`<img src="${EIMG}" alt="">`};im.src=r.result};r.readAsDataURL(f)}
+function evSave(){const g=k=>document.getElementById(k).value.trim(),num=k=>parseInt(g(k),10);
+ const ru=g("fe_ru"),when=g("fe_when"),seats=num("fe_seats"),price=num("fe_price")||0,maxg=Math.max(1,num("fe_maxg")||4);
+ if(!ru||!when||!(seats>0)){toast(t("need_ev"));return}
+ const old=EVE=="new"?null:S.events.find(x=>x.id==EVE);
+ if(old){const tk=evTaken(old);if(seats<tk){toast(t("seats_low")+" "+tk);return}}
+ const data={img:EIMG,when,price,seats,maxg,title:{ru,sr:g("fe_sr"),en:g("fe_en")},desc:{ru:g("fe_dru"),sr:g("fe_dsr"),en:g("fe_den")}};
+ let e;if(old){e=Object.assign(old,data);evLog("edit",e)}else{e={id:"e"+Date.now(),status:"on",guests:[],...data};S.events.push(e);evLog("new",e)}
+ if(!trySave()){if(!old)S.events.pop();return}
+ EVO=e.id;EVE=null;render();window.scrollTo(0,0);toast(t("saved"))}
+function evDel(id){const i=S.events.findIndex(x=>x.id==id),e=S.events[i];
+ if(evTaken(e)>0){if(!confirm(t("cancel_evq")))return;e.status="off";evLog("cancel",e)}
+ else{if(!confirm(t("del_evq")))return;S.events.splice(i,1);evLog("del",e);EVO=null}
+ save();render()}
+function evRestore(id){const e=S.events.find(x=>x.id==id);e.status="on";evLog("restore",e);save();render()}
+Object.assign(V,{
+ events(){const L2=evSort(S.events.filter(e=>!isPast(e)));if(!L2.length)return `<h1>${t("events")}</h1><p class="muted">${t("no_events")}</p>`;
+  return `<h1>${t("events")}</h1>`+L2.map(e=>{const mine=+S.booked[e.id]||0,left=e.seats-evTaken(e),o=!!OPEN[e.id],off=e.status!="on",d=EL(e.desc);
+  return `<div class="card event ${o?"open":""} ${off?"off":""}"><div class="tap" onclick="tog('${e.id}')">${e.img?`<div class="media"><img src="${e.img}" alt=""></div>`:""}
+   <div class="date">${evWhen(e)}</div><h3>${EL(e.title)}</h3>
+   ${o&&d?`<div class="desc">${d}</div>`:""}${d?`<span class="more">${o?t("less")+" ▴":t("more")+" ▾"}</span>`:""}</div>
+   ${off?`<p class="warn" style="margin-top:10px">${t("ev_off_g")}</p>`:`
+   <div class="row" style="margin:8px 0 12px"><span class="muted">${t("seats_left")}: ${Math.max(0,left)} ${t("of")} ${e.seats}</span><span class="pill">${e.price} ${t("din")} · ${t("pay_cash")}</span></div>
+   ${mine?`<div class="row"><div><b style="color:var(--ink)">✓ ${t("signed")}</b><div class="muted">${t("seats_mine")}: ${mine}${mine>=e.maxg?" · "+t("max_g")+" "+e.maxg:""}</div></div>
+      <div class="stepper"><button onclick="seat('${e.id}',-1)">−</button><b>${mine}</b><button ${left<=0||mine>=e.maxg?"disabled":""} onclick="seat('${e.id}',1)">+</button></div></div>`
+     :`<button class="btn" ${left<=0?"disabled":""} onclick="seat('${e.id}',1)">${left<=0?t("full"):t("signup")}</button>`}`}</div>`}).join("")},
+ evs(){
+  if(EVE){const e=EVE=="new"?{when:"",price:"",seats:"",maxg:4,title:{ru:"",sr:"",en:""},desc:{ru:"",sr:"",en:""}}:S.events.find(x=>x.id==EVE);
+   return `<h1>${EVE=="new"?t("add_ev"):t("edit")}</h1><div class="card form">
+    <label>${t("f_photo")}</label><div class="prev" id="fe_prev">${EIMG?`<img src="${EIMG}" alt="">`:t("no_photo")}</div>
+    <input type="file" accept="image/*" onchange="evPhoto(this)" style="font-size:14px;padding:8px">
+    <label>${t("n_ru")}</label><input id="fe_ru" value="${esc(e.title.ru)}">
+    <label>${t("f_when")}</label><input id="fe_when" type="datetime-local" value="${esc(e.when)}">
+    <div class="two"><div><label>${t("f_price")}</label><input id="fe_price" type="number" inputmode="numeric" min="0" value="${e.price}"></div>
+     <div><label>${t("f_seats")}</label><input id="fe_seats" type="number" inputmode="numeric" min="1" value="${e.seats}"></div></div>
+    <label>${t("f_maxg")}</label><input id="fe_maxg" type="number" inputmode="numeric" min="1" value="${e.maxg}">
+    <label>${t("d_ru")}</label><textarea id="fe_dru">${esc(e.desc.ru||"")}</textarea>
+    <p class="muted" style="margin:6px 0 10px">${t("lang_hint")}</p>
+    <label>${t("n_sr")}</label><input id="fe_sr" value="${esc(e.title.sr||"")}">
+    <label>${t("d_sr")}</label><textarea id="fe_dsr">${esc(e.desc.sr||"")}</textarea>
+    <label>${t("n_en")}</label><input id="fe_en" value="${esc(e.title.en||"")}">
+    <label>${t("d_en")}</label><textarea id="fe_den">${esc(e.desc.en||"")}</textarea>
+    <button class="btn" onclick="evSave()">${t("save")}</button><button class="btn ghost" style="margin-top:8px" onclick="evBack()">${t("cancel_e")}</button></div>`}
+  if(EVO){const e=S.events.find(x=>x.id==EVO);if(!e){EVO=null;return V.evs()}
+   const mine=+S.booked[e.id]||0,G=e.guests.concat(mine?[{who:S.phone,n:mine}]:[]),tk=evTaken(e),off=e.status!="on";
+   return `<p style="margin:0 0 10px"><a href="#" onclick="evBack();return false" style="color:var(--muted)">‹ ${t("back")}</a></p>
+   <div class="card event ${off?"off":""}">${e.img?`<div class="media"><img src="${e.img}" alt=""></div>`:""}<div class="date">${evWhen(e)}</div><h3>${EL(e.title)}</h3>
+    ${off?`<span class="pill">${t("cancelled")}</span>`:""}
+    <div class="row" style="margin-top:8px"><span class="muted">${tk} ${t("taken_l")} ${t("of")} ${e.seats} · ${t("max_g")} ${e.maxg}</span><span class="pill">${e.price} ${t("din")}</span></div>
+    ${e.desc.ru?`<div class="desc">${EL(e.desc)}</div>`:""}</div>
+   <div class="row" style="gap:8px;margin-bottom:14px"><button class="btn ghost" onclick="evEdit('${e.id}')">${t("edit")}</button>
+    ${off?`<button class="btn ghost" onclick="evRestore('${e.id}')">${t("restore")}</button>`:`<button class="btn ghost" onclick="evDel('${e.id}')">${tk>0?t("cancel_ev"):t("del")}</button>`}</div>
+   <h2>${t("booked_l")}: ${tk}</h2>${G.length?`<div class="card history">${G.map(g=>`<div><span>${esc(g.who)}</span><b>×${g.n}</b></div>`).join("")}</div>`:`<p class="muted">${t("no_guests")}</p>`}`}
+  const card=e=>{const off=e.status!="on";return `<div class="card event tap ${off?"off":""}" onclick="evOpen('${e.id}')"><div class="row" style="align-items:flex-start"><div><div class="date">${evWhen(e)}</div><b>${EL(e.title)}</b>${off?` <span class="pill">${t("cancelled")}</span>`:""}</div>
+   <span class="pill" style="white-space:nowrap">${evTaken(e)}/${e.seats}</span></div></div>`};
+  const up=evSort(S.events.filter(e=>!isPast(e))),past=evSort(S.events.filter(isPast)).reverse();
+  return `<h1>${t("evs")}</h1><button class="btn" style="margin-bottom:14px" onclick="evEdit('new')">+ ${t("add_ev")}</button>`+(up.length?up.map(card).join(""):`<p class="muted">${t("no_events")}</p>`)+
+   (past.length?`<h2 class="tap" onclick="EPAST=!EPAST;render()">${t("past")} (${past.length}) ${EPAST?"▴":"▾"}</h2>`+(EPAST?past.map(card).join(""):""):"")},
+ log(){return `<h1>${t("log")}</h1>`+(S.log.length?`<div class="card history">${S.log.slice().reverse().map(l=>l.type=="ev"?`<div><span>${esc(l.d)} · ${esc(l.who)} · ${t("l_ev_"+l.act)}<br><span class="muted">${esc(l.title)}</span></span><span></span></div>`:`<div><span>${esc(l.d)} · ${esc(l.who)} · ${t(l.type=="reward"?"l_reward":"l_earn")}<br><span class="muted">${l.items.map(([id,q])=>{const d=findAny(id);return (d?DN(d):"?")+(q>1?" ×"+q:"")}).join(", ")}</span></span><span class="${l.pts>0?"plus":"minus"}">${l.pts>0?"+":""}${l.pts}</span></div>`).join("")}</div>`:`<p class="muted">${t("empty_log")}</p>`)}
+});
+const _setRole=setRole;setRole=function(r){EVO=null;EVE=null;_setRole(r)};
+const _go=go;go=function(k){if(k=="evs"){EVO=null;EVE=null}_go(k)};
+
 render();
 </script>
 </body>
