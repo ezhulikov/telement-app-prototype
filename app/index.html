@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>t.element</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--bg:#ffffff;--card:#fff;--ink:#2b2b2b;--muted:#8f8f8f;--accent:#464646;--accent-h:#3a3a3a;--accent2:#2b2b2b;--line:#efefef;--radius:4px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;justify-content:center}
+  .app{width:100%;max-width:440px;min-height:100vh;display:flex;flex-direction:column;position:relative;padding-bottom:76px}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line)}
+  .logo{display:flex;align-items:center}.logo img{height:30px;display:block}
+  .logo b{display:inline-flex;width:30px;height:30px;border:2px solid var(--ink);align-items:center;justify-content:center;font-size:18px;font-weight:600}
+  .langs{display:flex;gap:4px}
+  .langs button{border:1px solid var(--line);background:transparent;border-radius:4px;padding:5px 9px;font-size:13px;color:var(--muted);cursor:pointer}
+  .langs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  main{padding:8px 20px;flex:1}
+  h1{font-size:28px;font-weight:700;margin:14px 0 16px;letter-spacing:-.3px}
+  h2{font-size:17px;margin:22px 0 10px}
+  .card{background:var(--card);border-radius:var(--radius);padding:18px;border:1px solid var(--line);margin-bottom:14px}
+  .points{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .points .big{font-size:44px;font-weight:700;line-height:1.1}
+  .points .sub{opacity:.8;font-size:14px}
+  .bar{height:8px;border-radius:4px;background:rgba(255,255,255,.25);margin:14px 0 6px;overflow:hidden}
+  .bar i{display:block;height:100%;background:#fff;border-radius:4px}
+  .qr{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+  .qr .box{background:#fff;padding:10px;border-radius:12px}
+  .muted{color:var(--muted);font-size:14px}
+  .btn{display:block;width:100%;border:0;border-radius:4px;padding:14px;font-size:15px;font-weight:500;font-family:inherit;background:var(--accent);color:#fff;cursor:pointer}
+  .btn:active{background:var(--accent-h)}
+  .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+  .btn.small{display:inline-block;width:auto;padding:9px 14px;font-size:14px}
+  .btn:disabled{opacity:.4;cursor:default}
+  input{width:100%;padding:14px;border-radius:4px;font-family:inherit;border:1px solid var(--line);font-size:17px;margin:8px 0 14px;background:#fff}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .pill{display:inline-block;font-size:12px;padding:3px 8px;border-radius:4px;background:#efefef;color:#464646}
+  .event .date{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  .event h3,.tea h3,.reward h3{font-size:17px;margin:4px 0}
+  .tea .ru{font-size:13px;color:var(--muted)}
+  nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;background:#fff;border-top:1px solid var(--line);display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+  nav button{flex:1;border:0;background:transparent;font-size:11px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+  nav button .ic{font-size:21px}
+  nav button.on{color:var(--accent);font-weight:600}
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:4px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;max-width:90%;text-align:center}
+  .toast.show{opacity:1}
+  .proto{font-size:11px;text-align:center;color:var(--muted);padding:6px 20px 0}
+  .login{min-height:calc(100dvh - 200px);display:flex;flex-direction:column;justify-content:center;text-align:center;padding:0 6px}
+  .login .mark{width:120px;margin:0 auto 26px;display:block}
+  .login h1{font-size:22px;margin:0 0 8px}
+  .login p{margin-bottom:22px}
+  .login input{text-align:center;font-size:20px;letter-spacing:1px}
+  body.out header .logo{visibility:hidden}
+  .history div{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .history div:last-child{border:0}
+  .media{margin:-18px -18px 14px;height:170px;overflow:hidden;border-radius:4px 4px 0 0;background:#f4f4f4}
+  .media img{width:100%;height:100%;object-fit:cover;display:block}
+  .tap{cursor:pointer}
+  .more{font-size:13px;color:var(--accent);font-weight:600;margin-top:8px;display:inline-block}
+  .desc{font-size:14px;line-height:1.5;color:#464646;margin:10px 0 4px;white-space:pre-line}
+  .open .media{height:260px}
+  .weights{display:flex;gap:6px;margin:12px 0 10px}
+  .weights button{flex:1;border:1px solid var(--line);background:#fff;border-radius:4px;padding:8px 0;font-family:inherit;font-size:14px;color:var(--ink);cursor:pointer}
+  .weights button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .side{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;text-align:right}
+  a.btn{text-align:center;text-decoration:none}
+  .roles{display:flex;gap:4px;justify-content:center;padding:8px 20px 0}
+  .roles button{border:1px dashed #c9c9c9;background:#fff;border-radius:4px;padding:4px 10px;font-size:12px;color:var(--muted);cursor:pointer;font-family:inherit}
+  .roles button.on{border-style:solid;border-color:var(--ink);color:var(--ink);font-weight:600}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:110px}
+  .tile{position:relative;border:1px solid var(--line);border-radius:4px;padding:14px 12px;background:#fff;cursor:pointer;min-height:84px;display:flex;flex-direction:column;justify-content:space-between;user-select:none}
+  .tile.sel{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+  .tile b{font-size:15px;line-height:1.25}.tile span{font-size:13px;color:var(--muted)}
+  .tile .q{position:absolute;top:-8px;right:-8px;background:var(--ink);color:#fff;border-radius:12px;min-width:24px;height:24px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 6px}
+  .tile .minus-b{position:absolute;bottom:8px;right:8px;border:1px solid var(--line);background:#fff;border-radius:4px;width:28px;height:28px;font-size:16px;cursor:pointer}
+  .paybar{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);width:100%;max-width:440px;background:#fff;border-top:1px solid var(--line);padding:10px 20px;display:flex;gap:12px;align-items:center}
+  .paybar .sum{font-size:20px;font-weight:700;white-space:nowrap}
+  .drow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .drow:last-child{border:0}.drow .acts{display:flex;gap:6px;flex-shrink:0}
+  .form label{display:block;font-size:13px;color:var(--muted);margin-top:4px}
+  .form input{margin:4px 0 10px;font-size:15px;padding:11px}
+  .guest{display:flex;justify-content:space-between;align-items:center}
+  .seg{display:flex;border:1px solid var(--line);border-radius:4px;margin:0 0 14px;overflow:hidden}
+  .seg button{flex:1;border:0;background:#fff;padding:10px;font-family:inherit;font-size:14px;color:var(--muted);cursor:pointer}
+  .seg button.on{background:var(--ink);color:#fff;font-weight:600}
+  .tile.off{opacity:.45}
+  .stepper{display:flex;align-items:center;gap:12px}
+  .stepper button{width:40px;height:40px;border:1px solid var(--accent);background:#fff;border-radius:4px;font-size:20px;color:var(--accent);cursor:pointer;font-family:inherit}
+  .stepper button:disabled{opacity:.35;cursor:default}
+  .stepper b{min-width:18px;text-align:center;font-size:18px}
+  textarea{width:100%;padding:11px;border-radius:4px;font-family:inherit;border:1px solid var(--line);font-size:15px;margin:4px 0 10px;background:#fff;min-height:90px;resize:vertical}
+  .form .two{display:flex;gap:10px}.form .two>div{flex:1}
+  .prev{height:150px;border-radius:4px;background:#f4f4f4;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;margin:4px 0 8px}
+  .prev img{width:100%;height:100%;object-fit:cover}
+  .event.off{opacity:.6}
+  .warn{color:#ab2e31;font-weight:600;font-size:14px}
+  .plus{color:#00a901;font-weight:600}.minus{color:#ab2e31;font-weight:600}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo"><img src="../assets/logo-horizontal.png" alt="t.element"></div>
+    <div class="langs" id="langs"></div>
+  </header>
+  <main id="view"></main>
+  <nav id="nav"></nav>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+const TEAS=[
+ {id:"t1",img:"assets/tea-beo.jpg",name:"Шу пуэр БЕО",ru:"Shu Puer BEO",vars:[[50,9915,800],[100,9916,1600]],type:{ru:"шу пуэр",sr:"šu puer",en:"shu puer"},
+  desc:{ru:"Шу пуэр 2022 года от фабрики Тун Чин Тан, спрессован специально для нашей чайной в блинчик 100 г. Мэнхайский древесно-ореховый профиль с необычными минеральными нотами. Настой плотный, скорее сухой, чем маслянистый. Отличный пуэр на каждый день.",
+   sr:"Šu puer iz 2022. fabrike Tong Čing Tang, presovan samo za našu čajdžinicu u pogačicu od 100 g. Menghaj drvenasto orašasti profil sa neobičnim mineralnim notama. Gust napitak, više suv nego uljast. Odličan puer za svaki dan.",
+   en:"2022 shu puer from the Tong Qing Tang factory, pressed exclusively for us into a 100 g cake. Classic Menghai woody nutty profile with unusual mineral notes. Dense, more dry than oily. A great everyday puer."}},
+ {id:"t2",img:"assets/tea-brutal-white.jpg",name:"Brutalistea",ru:"Белый прессованный",vars:[[50,9909,900],[100,9910,1800]],type:{ru:"белый чай",sr:"beli čaj",en:"white tea"},
+  desc:{ru:"Выдержанный Шоу Мэй фабрики Ли Да из листьев Да Бай Хао, сбор 2018 года, округ Фудин. Тёплый цветочно-медовый аромат с лёгкими древесными нотками. Вкус мягкий и сладкий. Для неспешных вечерних чаепитий.",
+   sr:"Odležali Šou Mej fabrike Li Da od listova Da Baj Hao, berba 2018, okrug Fuding. Topla cvetno medena aroma sa blagim drvenastim notama. Ukus mek i sladak. Za spore večernje čajanke.",
+   en:"Aged Shou Mei from the Li Da factory, Da Bai Hao leaves picked in 2018 in Fuding. Warm floral honey aroma with light woody notes. Soft and sweet. Made for slow evening sessions."}},
+ {id:"t3",img:"assets/tea-brutal-shu.jpg",name:"Цзинь Я Шу Brutalistea, 2021",ru:"Jin Ya Shu",vars:[[50,9903,1200],[100,9904,2400],[250,9905,6000]],type:{ru:"шу пуэр",sr:"šu puer",en:"shu puer"},
+  desc:{ru:"Шу пуэр от бренда Пань Лун, спрессован специально для нашей чайной. Много чайных почек, поэтому вкус мягкий и глубокий. Древесно-сухофруктовые ноты переходят в сладко-сливочное послевкусие. Даёт ровную бодрость.",
+   sr:"Šu puer brenda Pan Long, presovan samo za nas. Puno čajnih pupoljaka daje mekoću i dubinu. Drvenaste note i suvo voće prelaze u slatko kremast završetak. Daje ujednačenu budnost.",
+   en:"Shu puer from Pan Long, pressed exclusively for us. Lots of buds give it softness and depth. Woody dried fruit notes turn into a sweet creamy finish. Steady, even energy."}},
+ {id:"t4",img:"assets/tea-adria.jpg",name:"MonTeAdria",ru:"Травяной купаж",vars:[[50,9875,1100],[100,9876,2200],[250,9877,5500]],type:{ru:"травяной",sr:"biljni",en:"herbal"},
+  desc:{ru:"Травяной купаж на ферментированной основе. Душица и чабрец дают тёплый пряный характер, розмарин добавляет свежую хвойную ноту склонов Адриатики. Первоцвет и лепестки граната завершают композицию.",
+   sr:"Biljna mešavina na fermentisanoj osnovi. Origano i majčina dušica daju topao začinski karakter, ruzmarin svežu četinarsku notu jadranskih padina. Jaglac i latice nara zaokružuju kompoziciju.",
+   en:"Herbal blend on a fermented base. Oregano and thyme bring warm spice, rosemary adds a fresh piney note of the Adriatic slopes. Primrose and pomegranate petals finish it off."}},
+ {id:"t5",img:"assets/tea-liubao.jpg",name:"Хей Ча Лю Бао, 2010",ru:"Hei Cha Liu Bao",vars:[[50,9836,1200],[100,9837,2400],[250,9838,6000]],type:{ru:"тёмный чай",sr:"tamni čaj",en:"dark tea"},
+  desc:{ru:"Тёмный постферментированный чай из провинции Гуанси. Аромат старого дерева, листьев, лесных грибов и морских водорослей. Настой очень густой, бархатистый.",
+   sr:"Tamni postfermentisani čaj iz provincije Guangsi. Aroma starog drveta, lišća, šumskih pečuraka i morskih algi. Napitak veoma gust i baršunast.",
+   en:"Dark post fermented tea from Guangxi. Aroma of old wood, leaves, forest mushrooms and seaweed. Very thick, velvety liquor."}}
+];
+const SHOP="https://t-element.rs/checkout-2/?add-to-cart=";
+const SB_URL="https://wadtpwkjdfitnsedtopw.supabase.co",SB_KEY="sb_publishable_flltEQ517aO_vgdVInYmFA_Fqj61kC-";
+const sb=supabase.createClient(SB_URL,SB_KEY);
+const IMG=p=>p?SB_URL+"/storage/v1/object/public/event-images/"+p:"";
+const T={ru:{},sr:{},en:{}};
+const tr=(o)=>{for(const k in o){T.ru[k]=o[k][0];T.sr[k]=o[k][1];T.en[k]=o[k][2]}};
+tr({
+ welcome:["Добро пожаловать в t.element","Dobro došli u t.element","Welcome to t.element"],
+ login_hint:["Войдите по почте. Баллы и записи привяжутся к ней. Пароль не нужен.","Prijavite se e-poštom. Bodovi i prijave biće vezani za nju. Lozinka nije potrebna.","Sign in with your email. Points and bookings will be linked to it. No password needed."],
+ get_link:["Получить ссылку для входа","Pošalji link za prijavu","Email me a sign-in link"],
+ check_mail:["Проверьте почту","Proverite e-poštu","Check your inbox"],
+ sent_to:["Мы отправили ссылку для входа на","Poslali smo link za prijavu na","We sent a sign-in link to"],
+ link_hint:["Откройте письмо на этом телефоне и нажмите ссылку. Письмо может попасть в спам.","Otvorite pismo na ovom telefonu i kliknite link. Proverite i spam.","Open the email on this phone and tap the link. Check spam too."],
+ change_email:["Указать другую почту","Druga adresa","Use another email"],bad_email:["Проверьте адрес почты","Proverite adresu e-pošte","Check the email address"],
+ home:["Главная","Početna","Home"],rewards:["Баллы","Bodovi","Points"],events:["Афиша","Događaji","Events"],teas:["Новинки","Novo","New"],
+ cashier:["Касса","Kasa","Till"],evs:["Афиша","Događaji","Events"],log:["Журнал","Dnevnik","Log"],menu:["Меню","Meni","Menu"],
+ hello:["Привет","Zdravo","Hi"],your_points:["Ваши баллы","Vaši bodovi","Your points"],to_next:["До ближайшей награды","Do sledeće nagrade","Until the next reward"],pts:["баллов","bodova","points"],
+ show_qr:["Покажите этот код на кассе","Pokažite ovaj kod na kasi","Show this code at the counter"],qr_hint:["Кассир отсканирует его и начислит баллы за напитки.","Kasir će ga skenirati i dodati bodove za pića.","The cashier scans it and adds points for your drinks."],
+ logout:["Выйти","Odjavi se","Sign out"],rule2:["Баллы начисляются за напитки. Чтобы получить награду, покажите QR-код на кассе.","Bodovi se dobijaju za pića. Za nagradu pokažite QR kod na kasi.","You earn points for drinks. To get a reward, show your QR code at the counter."],
+ avail:["доступно","dostupno","available"],need:["не хватает","nedostaje","need"],history:["История","Istorija","History"],no_history:["Пока пусто","Još ništa","Nothing yet"],
+ earn:["Покупка","Kupovina","Purchase"],reward:["Обмен","Zamena","Reward"],fix:["Исправление","Ispravka","Correction"],
+ seats_left:["Свободно мест","Slobodnih mesta","Seats left"],of:["из","od","of"],signup:["Записаться","Prijavi se","Sign up"],signed:["Вы записаны","Prijavljeni ste","You're booked"],full:["Мест нет","Nema mesta","Fully booked"],
+ pay_cash:["Оплата на месте","Plaćanje na licu mesta","Pay on site"],signed_ok:["Вы записаны. Ждём вас!","Prijavljeni ste. Vidimo se!","You're booked. See you there!"],cancel_ok:["Запись отменена, место освободилось.","Prijava je otkazana.","Booking cancelled."],
+ seats_mine:["Ваших мест","Vaših mesta","Your seats"],max_g:["максимум на гостя","najviše po gostu","max per guest"],more:["Подробнее","Detaljnije","More"],less:["Свернуть","Zatvori","Less"],
+ ev_off_g:["Мероприятие отменено. Приносим извинения.","Događaj je otkazan. Izvinjavamo se.","This event is cancelled. We're sorry."],no_events:["Скоро здесь появятся мероприятия.","Uskoro ovde stižu događaji.","Events are coming soon."],din:["дин","din","RSD"],
+ new_in:["Новое на полках","Novo na policama","New on the shelves"],order:["Заказать","Naruči","Order"],g:["г","g","g"],
+ scan:["Сканировать QR гостя","Skeniraj QR gosta","Scan guest QR"],stop_scan:["Остановить камеру","Zaustavi kameru","Stop camera"],or_email:["или найдите гостя по почте","ili pronađite gosta po e-pošti","or find the guest by email"],find:["Найти","Pronađi","Find"],
+ not_found:["Гость не найден","Gost nije pronađen","Guest not found"],cam_err:["Нет доступа к камере","Nema pristupa kameri","No camera access"],guest_lbl:["Гость","Gost","Guest"],balance:["баланс","stanje","balance"],
+ tab_earn:["Начислить","Dodaj bodove","Add points"],tab_reward:["Выдать награду","Daj nagradu","Give reward"],confirm:["Начислить","Dodaj","Add"],give:["Выдать","Daj","Give"],given:["Выдано","Dato","Given"],accrued:["Начислено","Dodato","Added"],
+ cancel_g:["Другой гость","Drugi gost","Another guest"],no_drinks:["Меню пусто. Админ добавляет напитки во вкладке «Меню».","Meni je prazan. Admin dodaje pića u «Meni».","The menu is empty. An admin adds drinks under Menu."],
+ your_name:["Как вас зовут? Имя будет видно в журнале.","Kako se zovete? Ime se vidi u dnevniku.","What's your name? It shows in the log."],save:["Сохранить","Sačuvaj","Save"],saved:["Сохранено","Sačuvano","Saved"],
+ drinks:["Напитки","Pića","Drinks"],rewards_l:["Награды","Nagrade","Rewards"],staff:["Сотрудники","Zaposleni","Staff"],add_drink:["Добавить напиток","Dodaj piće","Add drink"],add_reward:["Добавить награду","Dodaj nagradu","Add reward"],
+ edit:["Изменить","Izmeni","Edit"],del:["Удалить","Obriši","Delete"],restore:["Вернуть","Vrati","Restore"],hidden:["Скрытые","Skriveno","Hidden"],cancel_e:["Отмена","Otkaži","Cancel"],
+ n_ru:["Название (русский)","Naziv (ruski)","Name (Russian)"],n_sr:["Название (српски)","Naziv (srpski)","Name (Serbian)"],n_en:["Название (English)","Naziv (engleski)","Name (English)"],
+ points_lbl:["Баллы за напиток","Bodovi za piće","Points per drink"],price_lbl:["Цена в баллах","Cena u bodovima","Price in points"],need_name:["Заполните название и баллы","Unesite naziv i bodove","Fill in the name and points"],
+ del_q:["Убрать из меню? В журнале останется.","Ukloniti iz menija? U dnevniku ostaje.","Remove from the menu? It stays in the log."],
+ staff_hint:["Человек должен один раз войти в приложение по своей почте. Потом введите её здесь.","Osoba treba jednom da se prijavi svojom e-poštom. Zatim je unesite ovde.","The person signs in once with their email. Then enter it here."],
+ make_cashier:["Сделать кассиром","Postavi za kasira","Make cashier"],make_admin:["Сделать админом","Postavi za admina","Make admin"],make_guest:["Убрать доступ","Ukloni pristup","Remove access"],
+ r_cashier:["кассир","kasir","cashier"],r_admin:["админ","admin","admin"],r_guest:["гость","gost","guest"],you:["это вы","to ste vi","you"],
+ add_ev:["Добавить мероприятие","Dodaj događaj","Add event"],f_photo:["Фото","Fotografija","Photo"],no_photo:["Фото не выбрано","Fotografija nije izabrana","No photo chosen"],f_when:["Дата и время","Datum i vreme","Date and time"],
+ f_price:["Цена, динаров","Cena, dinara","Price, RSD"],f_seats:["Всего мест","Ukupno mesta","Total seats"],f_maxg:["Максимум мест на гостя","Najviše mesta po gostu","Max seats per guest"],
+ d_ru:["Описание (русский)","Opis (ruski)","Description (Russian)"],d_sr:["Описание (српски)","Opis (srpski)","Description (Serbian)"],d_en:["Описание (English)","Opis (engleski)","Description (English)"],
+ lang_hint:["Сербский и английский можно не заполнять, тогда гость увидит русский текст.","Srpski i engleski možete ostaviti prazne, gost će videti ruski tekst.","Serbian and English can stay empty, guests will see the Russian text."],
+ need_ev:["Заполните название, дату и число мест","Unesite naziv, datum i broj mesta","Fill in the title, date and seats"],booked_l:["Записались","Prijavljeni","Booked"],no_guests:["Пока никто не записался","Još niko nije prijavljen","No bookings yet"],
+ cancel_ev:["Отменить мероприятие","Otkaži događaj","Cancel event"],cancel_evq:["Отменить мероприятие? Записавшиеся гости увидят отмену.","Otkazati događaj? Prijavljeni gosti će videti otkazivanje.","Cancel this event? Booked guests will see it."],
+ del_evq:["Удалить мероприятие? Записей на него нет.","Obrisati događaj? Nema prijava.","Delete this event? It has no bookings."],cancelled:["Отменено","Otkazano","Cancelled"],past:["Прошедшие","Prošli","Past"],back:["Назад","Nazad","Back"],taken_l:["занято","zauzeto","taken"],
+ uploading:["Загружаю фото…","Otpremam fotografiju…","Uploading photo…"],
+ ledger_t:["Баллы","Bodovi","Points"],changes_t:["Изменения","Izmene","Changes"],void:["Отменить","Poništi","Void"],void_q:["Отменить эту операцию? Баллы вернутся как были.","Poništiti ovu operaciju?","Void this entry? Points go back."],voided:["отменено","poništeno","voided"],
+ empty_log:["Записей пока нет","Još nema zapisa","Nothing yet"],
+ e_full:["Мест больше нет","Nema više mesta","No seats left"],e_limit:["Это максимум мест на гостя","To je maksimum po gostu","That's the max per guest"],e_closed:["Запись закрыта","Prijava je zatvorena","Booking is closed"],
+ e_points:["Не хватает баллов","Nedovoljno bodova","Not enough points"],e_seats:["Мест не может быть меньше, чем уже занято","Mesta ne može biti manje nego zauzeto","Seats can't be fewer than booked"],
+ e_neg:["Сначала отмените выдачу награды, иначе баланс уйдёт в минус","Prvo poništite nagradu","Void the reward first, the balance would go negative"],e_booked:["На мероприятие есть записи, его можно только отменить","Događaj ima prijave, može se samo otkazati","The event has bookings, cancel it instead"],
+ e_generic:["Что-то пошло не так. Попробуйте ещё раз.","Nešto nije u redu. Pokušajte ponovo.","Something went wrong. Try again."],e_link:["Ссылка устарела. Запросите новую.","Link je istekao. Zatražite novi.","The link expired. Request a new one."],
+ e_rate:["Слишком много писем. Подождите и попробуйте позже.","Previše pisama. Pokušajte kasnije.","Too many emails. Try again later."],
+ l_INSERT:["Добавлено","Dodato","Added"],l_UPDATE:["Изменено","Izmenjeno","Changed"],l_DELETE:["Удалено","Obrisano","Deleted"],system:["система","sistem","system"],
+ x_drinks:["напиток","piće","drink"],x_rewards:["награда","nagrada","reward"],x_events:["мероприятие","događaj","event"],x_profiles:["роль","uloga","role"]
+});
+const LOC={ru:"ru-RU",sr:"sr-Latn-RS",en:"en-GB"};
+let LANG=localStorage.getItem("te_lang")||"ru";
+const t=k=>T[LANG][k]??k;
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const L=o=>esc((o&&(o[LANG]||o.ru))||"");
+function toast(m){const e=document.getElementById("toast");e.textContent=m;e.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove("show"),2600)}
+function errText(e){const m=(e&&(e.message||e.error_description||e.msg))||"";
+ const map=[["not enough points","e_points"],["full","e_full"],["limit","e_limit"],["closed","e_closed"],["seats below booked","e_seats"],["negative","e_neg"],["bookings_event_id_fkey","e_booked"],["guest not found","not_found"],["rate limit","e_rate"],["expired","e_link"]];
+ for(const [k,v] of map)if(m.toLowerCase().includes(k))return t(v);console.error(e);return t("e_generic")}
+async function q(p){const {data,error}=await p;if(error){toast(errText(error));throw error}return data}
+const fmtDate=(d,o)=>new Date(d).toLocaleString(LOC[LANG],o);
+const evWhen=e=>fmtDate(e.starts_at,{weekday:"short",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});
+const short=d=>fmtDate(d,{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+const who=p=>p?esc(p.name||p.email||p.tg_username||"?"):"?";
+
+// ===== Состояние =====
+let ME=null,TAB="home",VIEW_STEP="email",PENDING="",BOOT=true;
+let D={drinks:[],rewards:[],events:[],seats:{},mine:{},balance:0,history:[]};
+let OPEN={},SEL={},CART={},GUEST=null,CMODE="earn",RSEL=null,MLIST="drinks",EDIT=null,EVO=null,EVE=null,EIMG=null,EBLOB=null,EPAST=false,LOGT="ledger",SCANNING=false,STREAM=null;
+const isStaff=()=>ME&&(ME.role=="cashier"||ME.role=="admin");
+const isAdmin=()=>ME&&ME.role=="admin";
+
+// ===== Загрузка данных =====
+async function loadCommon(){
+ const [dr,rw,ev,st]=await Promise.all([
+  q(sb.from("drinks").select("*").order("sort").order("id")),
+  q(sb.from("rewards").select("*").order("cost")),
+  q(sb.from("events").select("*").order("starts_at")),
+  q(sb.rpc("event_seats"))]);
+ D.drinks=dr;D.rewards=rw;D.events=ev;D.seats={};st.forEach(s=>D.seats[s.event_id]=s.taken)}
+async function loadGuest(){
+ const [b,h,m]=await Promise.all([
+  q(sb.from("balances").select("points").eq("guest_id",ME.id).maybeSingle()),
+  q(sb.from("ledger").select("id,kind,points,created_at,ledger_items(qty,name_snap)").eq("guest_id",ME.id).order("id",{ascending:false}).limit(50)),
+  q(sb.from("bookings").select("event_id,seats").eq("guest_id",ME.id))]);
+ D.balance=b?b.points:0;D.history=h;D.mine={};m.forEach(x=>D.mine[x.event_id]=x.seats)}
+async function loadMe(){const u=(await sb.auth.getUser()).data.user;if(!u){ME=null;return}
+ ME=await q(sb.from("profiles").select("*").eq("id",u.id).single());
+ if(isStaff()&&!["cashier","evs","log","menu"].includes(TAB))TAB="cashier";
+ if(!isStaff()&&!["home","rewards","events","teas"].includes(TAB))TAB="home";
+ if(TAB=="menu"&&!isAdmin())TAB="cashier"}
+async function refresh(){if(!ME)return render();await loadCommon();if(!isStaff()||TAB=="events")await loadGuest();render()}
+
+// ===== Шапка и навигация =====
+function langs(){document.getElementById("langs").innerHTML=["ru","sr","en"].map(l=>`<button class="${LANG==l?"on":""}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join("");document.documentElement.lang=LANG}
+function setLang(l){LANG=l;localStorage.setItem("te_lang",l);render()}
+function nav(){const n=document.getElementById("nav");if(!ME){n.style.display="none";return}n.style.display="flex";
+ const items=isStaff()?[["cashier","⌗"],["evs","◷"],["log","☰"]].concat(isAdmin()?[["menu","✎"]]:[]):[["home","☗"],["rewards","★"],["events","◷"],["teas","❦"]];
+ n.innerHTML=items.map(([k,i])=>`<button class="${TAB==k?"on":""}" onclick="go('${k}')"><span class="ic">${i}</span>${t(k)}</button>`).join("")}
+async function go(k){stopScan();TAB=k;if(k=="log")D.log=undefined;if(k=="menu")D.staff=undefined;EDIT=null;EVO=null;EVE=null;window.scrollTo(0,0);render();await refresh()}
+function render(){document.body.classList.toggle("out",!ME);langs();
+ document.getElementById("view").innerHTML=BOOT?`<p class="muted" style="text-align:center;margin-top:40vh">…</p>`:ME?V[TAB]():V.login();nav()}
+function qrSVG(text){if(typeof qrcode==="undefined")return `<div class="muted">QR</div>`;const x=qrcode(0,"M");x.addData(text);x.make();return x.createSvgTag(5,0)}
+
+// ===== Вход =====
+async function sendLink(){const v=document.getElementById("em").value.trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){toast(t("bad_email"));return}
+ const b=document.getElementById("sendb");b.disabled=true;
+ const {error}=await sb.auth.signInWithOtp({email:v,options:{emailRedirectTo:location.origin+location.pathname}});
+ b.disabled=false;if(error){toast(errText(error));return}PENDING=v;VIEW_STEP="sent";render()}
+async function logout(){stopScan();await sb.auth.signOut();ME=null;TAB="home";VIEW_STEP="email";render()}
+
+const V={
+ login(){const top=`<img class="mark" src="../assets/logo-square.png" alt="t.element">`;
+  if(VIEW_STEP!="sent")return `<div class="login">${top}<h1>${t("welcome")}</h1><p class="muted">${t("login_hint")}</p>
+   <input id="em" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com" value="${esc(PENDING)}" onkeydown="if(event.key=='Enter')sendLink()">
+   <button class="btn" id="sendb" onclick="sendLink()">${t("get_link")}</button></div>`;
+  return `<div class="login">${top}<h1>${t("check_mail")}</h1><p class="muted">${t("sent_to")}<br><b style="color:var(--ink)">${esc(PENDING)}</b></p>
+   <p class="muted">${t("link_hint")}</p>
+   <p class="muted" style="margin-top:16px"><a href="#" onclick="VIEW_STEP='email';render();return false" style="color:var(--muted)">${t("change_email")}</a></p></div>`},
+
+ // ===== Гость =====
+ home(){const goals=D.rewards.filter(r=>r.active).map(r=>r.cost).sort((a,b)=>a-b),goal=goals.find(c=>c>D.balance)||goals[goals.length-1]||0,pct=goal?Math.min(100,Math.round(D.balance/goal*100)):0;
+  return `<h1>${t("hello")}${ME.name?", "+esc(ME.name):""}!</h1>
+  <div class="card points"><div class="sub">${t("your_points")}</div><div class="big">${D.balance}</div>
+   ${goal?`<div class="bar"><i style="width:${pct}%"></i></div><div class="sub">${t("to_next")}: ${Math.max(0,goal-D.balance)} ${t("pts")}</div>`:""}</div>
+  <div class="card qr"><div class="box">${qrSVG("TELEMENT:"+ME.qr_token)}</div><b>${t("show_qr")}</b><span class="muted">${t("qr_hint")}</span></div>
+  <p class="muted" style="text-align:center;margin:16px 0"><a href="#" onclick="logout();return false" style="color:var(--muted)">${t("logout")}</a></p>`},
+ rewards(){const R=D.rewards.filter(r=>r.active);
+  return `<h1>${t("rewards")}: ${D.balance}</h1><p class="muted" style="margin-bottom:14px">${t("rule2")}</p>`+
+  R.map(r=>{const ok=D.balance>=r.cost;return `<div class="card reward row"><div><h3>${L(r.name)}</h3><span class="pill">${r.cost} ${t("pts")}</span></div>
+   <span class="${ok?"plus":"muted"}" style="text-align:right;font-size:14px">${ok?"✓ "+t("avail"):t("need")+" "+(r.cost-D.balance)}</span></div>`}).join("")+
+  `<h2>${t("history")}</h2>`+(D.history.length?`<div class="card history">${D.history.map(h=>`<div><span>${short(h.created_at)} · ${t(h.kind)}<br><span class="muted">${h.ledger_items.map(i=>L(i.name_snap)+(i.qty>1?" ×"+i.qty:"")).join(", ")}</span></span><span class="${h.points>0?"plus":"minus"}">${h.points>0?"+":""}${h.points}</span></div>`).join("")}</div>`:`<p class="muted">${t("no_history")}</p>`)},
+ events(){const now=Date.now(),E=D.events.filter(e=>new Date(e.starts_at).getTime()>now-3*3600e3);
+  if(!E.length)return `<h1>${t("events")}</h1><p class="muted">${t("no_events")}</p>`;
+  return `<h1>${t("events")}</h1>`+E.map(e=>{const mine=D.mine[e.id]||0,left=e.seats-(D.seats[e.id]||0),o=!!OPEN[e.id],off=e.status!="scheduled",d=L(e.description);
+  return `<div class="card event ${o?"open":""} ${off?"off":""}"><div class="tap" onclick="OPEN[${e.id}]=!OPEN[${e.id}];render()">${e.image_path?`<div class="media"><img src="${IMG(e.image_path)}" alt=""></div>`:""}
+   <div class="date">${evWhen(e)}</div><h3>${L(e.title)}</h3>
+   ${o&&d?`<div class="desc">${d}</div>`:""}${d?`<span class="more">${o?t("less")+" ▴":t("more")+" ▾"}</span>`:""}</div>
+   ${off?`<p class="warn" style="margin-top:10px">${t("ev_off_g")}</p>`:`
+   <div class="row" style="margin:8px 0 12px"><span class="muted">${t("seats_left")}: ${Math.max(0,left)} ${t("of")} ${e.seats}</span><span class="pill">${e.price_rsd} ${t("din")} · ${t("pay_cash")}</span></div>
+   ${mine?`<div class="row"><div><b style="color:var(--ink)">✓ ${t("signed")}</b><div class="muted">${t("seats_mine")}: ${mine}${mine>=e.max_per_guest?" · "+t("max_g")+" "+e.max_per_guest:""}</div></div>
+      <div class="stepper"><button onclick="seat(${e.id},-1)">−</button><b>${mine}</b><button ${left<=0||mine>=e.max_per_guest?"disabled":""} onclick="seat(${e.id},1)">+</button></div></div>`
+     :`<button class="btn" ${left<=0?"disabled":""} onclick="seat(${e.id},1)">${left<=0?t("full"):t("signup")}</button>`}`}</div>`}).join("")},
+ teas(){return `<h1>${t("new_in")}</h1>`+TEAS.map(x=>{const o=!!OPEN[x.id],si=SEL[x.id]||0,v=x.vars[si],href=SHOP+v[1];
+   const btn=cls=>`<a class="btn ${cls}" href="${href}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${t("order")}</a>`;
+   return `<div class="card tea tap ${o?"open":""}" onclick="OPEN['${x.id}']=!OPEN['${x.id}'];render()"><div class="media"><img src="../${x.img}" alt=""></div>
+   <div class="row" style="align-items:flex-start"><div><span class="pill">${L(x.type)}</span><h3>${x.name}</h3><div class="ru">${x.ru}</div></div>
+    <div class="side"><span class="muted">${v[2]} din / ${v[0]} ${t("g")}</span>${o?"":btn("small")}</div></div>
+   ${o?`<div class="desc">${L(x.desc)}</div>
+   <div class="weights">${x.vars.map((w,i)=>`<button class="${i==si?"on":""}" onclick="event.stopPropagation();SEL['${x.id}']=${i};render()">${w[0]} ${t("g")} · ${w[2]}</button>`).join("")}</div>
+   ${btn("")}`:""}<span class="more">${o?t("less")+" ▴":t("more")+" ▾"}</span></div>`}).join("")},
+
+ // ===== Касса =====
+ cashier(){
+  const nameCard=!ME.name?`<div class="card form"><label>${t("your_name")}</label><input id="myname"><button class="btn small" onclick="saveName()">${t("save")}</button></div>`:"";
+  if(!GUEST)return `<h1>${t("cashier")}</h1>${nameCard}
+   <div class="card qr">${SCANNING?`<video id="vid" playsinline muted style="width:100%;border-radius:4px;background:#000"></video><button class="btn ghost" onclick="stopScan();render()">${t("stop_scan")}</button>`
+    :`<div style="font-size:54px;line-height:1">⌗</div><button class="btn" onclick="startScan()">${t("scan")}</button>`}</div>
+   <div class="card form"><label>${t("or_email")}</label><input id="gemail" type="email" inputmode="email" placeholder="name@example.com" onkeydown="if(event.key=='Enter')findGuest()"><button class="btn ghost" onclick="findGuest()">${t("find")}</button></div>`;
+  const head=`<h1>${t("cashier")}</h1>
+  <div class="card guest"><div><div class="muted">${t("guest_lbl")}</div><b>${who(GUEST)}</b></div><div style="text-align:right"><div class="muted">${t("balance")}</div><b>${GUEST.balance} ${t("pts")}</b></div></div>
+  <div class="seg"><button class="${CMODE=="earn"?"on":""}" onclick="CMODE='earn';RSEL=null;render()">${t("tab_earn")}</button><button class="${CMODE=="reward"?"on":""}" onclick="CMODE='reward';render()">${t("tab_reward")}</button></div>`;
+  const foot=`<p class="muted" style="text-align:center;margin:-90px 0 110px"><a href="#" onclick="endGuest();return false" style="color:var(--muted)">${t("cancel_g")}</a></p>`;
+  if(CMODE=="earn"){const act=D.drinks.filter(d=>d.active),p=cartPts();
+   if(!act.length)return head+`<p class="muted">${t("no_drinks")}</p>`;
+   return head+`<div class="tiles">${act.map(d=>{const n=CART[d.id]||0;return `<div class="tile ${n?"sel":""}" onclick="addD(${d.id},1)">
+    ${n?`<div class="q">×${n}</div>`:""}<b>${L(d.name)}</b><span>+${d.points}</span>${n?`<button class="minus-b" onclick="event.stopPropagation();addD(${d.id},-1)">−</button>`:""}</div>`}).join("")}</div>
+    <div class="paybar"><div class="sum">+${p}</div><button class="btn" id="payb" ${p?"":"disabled"} onclick="accrue()">${t("confirm")}</button></div>`+foot}
+  const r=RSEL&&D.rewards.find(x=>x.id==RSEL);
+  return head+`<div class="tiles">${D.rewards.filter(x=>x.active).map(x=>{const ok=GUEST.balance>=x.cost;return `<div class="tile ${RSEL==x.id?"sel":""} ${ok?"":"off"}" onclick="pickR(${x.id})">
+    <b>${L(x.name)}</b><span>${x.cost} ${t("pts")}${ok?"":" · "+t("need")+" "+(x.cost-GUEST.balance)}</span></div>`}).join("")}</div>
+    <div class="paybar"><div class="sum">${r?"−"+r.cost:"0"}</div><button class="btn" id="payb" ${r?"":"disabled"} onclick="giveR()">${t("give")}</button></div>`+foot},
+
+ // ===== Меню (админ) =====
+ menu(){const tabs=[["drinks","drinks"],["rewards","rewards_l"],["staff","staff"]];
+  const seg=`<div class="seg">${tabs.map(([k,l])=>`<button class="${MLIST==k?"on":""}" onclick="MLIST='${k}';EDIT=null;D.staff=undefined;render()">${t(l)}</button>`).join("")}</div>`;
+  if(MLIST=="staff")return `<h1>${t("menu")}</h1>${seg}<div class="card form"><label>${t("staff_hint")}</label><input id="semail" type="email" inputmode="email" placeholder="name@example.com">
+    <div class="row" style="gap:8px"><button class="btn ghost" onclick="setRoleByEmail('cashier')">${t("make_cashier")}</button><button class="btn ghost" onclick="setRoleByEmail('admin')">${t("make_admin")}</button></div></div>
+    <div class="card">${(D.staff||[]).map(p=>`<div class="drow"><div><b>${who(p)}</b><div class="muted">${esc(p.email||"")} · ${t("r_"+p.role)}</div></div>
+     ${p.id==ME.id?`<span class="muted">${t("you")}</span>`:`<button class="btn small ghost" onclick="setRoleFor('${p.id}','guest')">${t("make_guest")}</button>`}</div>`).join("")}</div>`;
+  const isD=MLIST=="drinks",tbl=isD?D.drinks:D.rewards,pk=isD?"points":"cost";
+  if(EDIT){const d=EDIT=="new"?{name:{ru:"",sr:"",en:""},[pk]:""}:tbl.find(x=>x.id==EDIT);
+   return `<h1>${EDIT=="new"?t(isD?"add_drink":"add_reward"):t("edit")}</h1><div class="card form">
+    <label>${t("n_ru")}</label><input id="f_ru" value="${esc(d.name.ru)}">
+    <label>${t("n_sr")}</label><input id="f_sr" value="${esc(d.name.sr||"")}">
+    <label>${t("n_en")}</label><input id="f_en" value="${esc(d.name.en||"")}">
+    <label>${t(isD?"points_lbl":"price_lbl")}</label><input id="f_pts" type="number" inputmode="numeric" min="1" value="${d[pk]}">
+    <button class="btn" onclick="saveItem()">${t("save")}</button><button class="btn ghost" style="margin-top:8px" onclick="EDIT=null;render()">${t("cancel_e")}</button></div>`}
+  const act=tbl.filter(d=>d.active),hid=tbl.filter(d=>!d.active);
+  return `<h1>${t("menu")}</h1>${seg}<button class="btn" style="margin-bottom:14px" onclick="EDIT='new';render()">+ ${t(isD?"add_drink":"add_reward")}</button>
+  ${act.length?`<div class="card">${act.map(d=>`<div class="drow"><div><b>${L(d.name)}</b><div class="muted">${isD?"+":""}${d[pk]} ${t("pts")}</div></div>
+   <div class="acts"><button class="btn small ghost" onclick="EDIT=${d.id};render()">${t("edit")}</button><button class="btn small ghost" onclick="setActive(${d.id},false)">${t("del")}</button></div></div>`).join("")}</div>`:""}
+  ${hid.length?`<h2>${t("hidden")}</h2><div class="card">${hid.map(d=>`<div class="drow"><div class="muted">${L(d.name)} · ${d[pk]}</div><button class="btn small ghost" onclick="setActive(${d.id},true)">${t("restore")}</button></div>`).join("")}</div>`:""}`},
+
+ // ===== Журнал =====
+ log(){const seg=isAdmin()?`<div class="seg"><button class="${LOGT=="ledger"?"on":""}" onclick="LOGT='ledger';loadLog()">${t("ledger_t")}</button><button class="${LOGT=="changes"?"on":""}" onclick="LOGT='changes';loadLog()">${t("changes_t")}</button></div>`:"";
+  if(!D.log)return `<h1>${t("log")}</h1>${seg}<p class="muted">…</p>`;
+  if(LOGT=="changes")return `<h1>${t("log")}</h1>${seg}`+(D.log.length?`<div class="card history">${D.log.map(l=>{const o=l.after||l.before||{},nm=o.title||o.name;
+    const what=l.entity=="profiles"?esc(o.name||o.email||"")+" → "+t("r_"+o.role):L(nm);
+    return `<div><span>${short(l.created_at)} · ${l.staff?who(l.staff):t("system")}<br><span class="muted">${t("l_"+l.action)} · ${t("x_"+l.entity)}: ${what}</span></span><span></span></div>`}).join("")}</div>`:`<p class="muted">${t("empty_log")}</p>`);
+  const voided=new Set(D.log.filter(l=>l.void_of).map(l=>l.void_of));
+  return `<h1>${t("log")}</h1>${seg}`+(D.log.length?`<div class="card history">${D.log.map(l=>`<div><span>${short(l.created_at)} · ${who(l.staff)} · ${t(l.kind)}${voided.has(l.id)?" · "+t("voided"):""}<br>
+    <span class="muted">${who(l.guest)}${l.ledger_items.length?" · "+l.ledger_items.map(i=>L(i.name_snap)+(i.qty>1?" ×"+i.qty:"")).join(", "):""}</span>
+    ${isAdmin()&&l.kind!="fix"&&!voided.has(l.id)?`<br><a href="#" onclick="voidEntry(${l.id});return false" style="color:var(--muted);font-size:13px">${t("void")}</a>`:""}</span>
+    <span class="${l.points>0?"plus":"minus"}">${l.points>0?"+":""}${l.points}</span></div>`).join("")}</div>`:`<p class="muted">${t("empty_log")}</p>`)},
+
+ // ===== Афиша для сотрудников =====
+ evs(){
+  if(EVE){const e=EVE=="new"?{starts_at:null,price_rsd:"",seats:"",max_per_guest:4,title:{ru:"",sr:"",en:""},description:{ru:"",sr:"",en:""}}:D.events.find(x=>x.id==EVE);
+   return `<h1>${EVE=="new"?t("add_ev"):t("edit")}</h1><div class="card form">
+    <label>${t("f_photo")}</label><div class="prev" id="fe_prev">${EIMG?`<img src="${EIMG}" alt="">`:t("no_photo")}</div>
+    <input type="file" accept="image/*" onchange="evPhoto(this)" style="font-size:14px;padding:8px">
+    <label>${t("n_ru")}</label><input id="fe_ru" value="${esc(e.title.ru)}">
+    <label>${t("f_when")}</label><input id="fe_when" type="datetime-local" value="${e.starts_at?toLocalInput(e.starts_at):""}">
+    <div class="two"><div><label>${t("f_price")}</label><input id="fe_price" type="number" inputmode="numeric" min="0" value="${e.price_rsd}"></div>
+     <div><label>${t("f_seats")}</label><input id="fe_seats" type="number" inputmode="numeric" min="1" value="${e.seats}"></div></div>
+    <label>${t("f_maxg")}</label><input id="fe_maxg" type="number" inputmode="numeric" min="1" value="${e.max_per_guest}">
+    <label>${t("d_ru")}</label><textarea id="fe_dru">${esc(e.description.ru||"")}</textarea>
+    <p class="muted" style="margin:6px 0 10px">${t("lang_hint")}</p>
+    <label>${t("n_sr")}</label><input id="fe_sr" value="${esc(e.title.sr||"")}">
+    <label>${t("d_sr")}</label><textarea id="fe_dsr">${esc(e.description.sr||"")}</textarea>
+    <label>${t("n_en")}</label><input id="fe_en" value="${esc(e.title.en||"")}">
+    <label>${t("d_en")}</label><textarea id="fe_den">${esc(e.description.en||"")}</textarea>
+    <button class="btn" id="evsave" onclick="evSave()">${t("save")}</button><button class="btn ghost" style="margin-top:8px" onclick="evBack()">${t("cancel_e")}</button></div>`}
+  if(EVO){const e=D.events.find(x=>x.id==EVO);if(!e){EVO=null;return V.evs()}
+   const tk=D.seats[e.id]||0,off=e.status!="scheduled",G=D.evGuests||[];
+   return `<p style="margin:0 0 10px"><a href="#" onclick="evBack();return false" style="color:var(--muted)">‹ ${t("back")}</a></p>
+   <div class="card event ${off?"off":""}">${e.image_path?`<div class="media"><img src="${IMG(e.image_path)}" alt=""></div>`:""}<div class="date">${evWhen(e)}</div><h3>${L(e.title)}</h3>
+    ${off?`<span class="pill">${t("cancelled")}</span>`:""}
+    <div class="row" style="margin-top:8px"><span class="muted">${tk} ${t("taken_l")} ${t("of")} ${e.seats} · ${t("max_g")} ${e.max_per_guest}</span><span class="pill">${e.price_rsd} ${t("din")}</span></div>
+    ${e.description.ru?`<div class="desc">${L(e.description)}</div>`:""}</div>
+   <div class="row" style="gap:8px;margin-bottom:14px"><button class="btn ghost" onclick="evEdit(${e.id})">${t("edit")}</button>
+    ${off?`<button class="btn ghost" onclick="evStatus(${e.id},'scheduled')">${t("restore")}</button>`:`<button class="btn ghost" onclick="evDel(${e.id})">${tk>0?t("cancel_ev"):t("del")}</button>`}</div>
+   <h2>${t("booked_l")}: ${tk}</h2>${G.length?`<div class="card history">${G.map(g=>`<div><span>${who(g.guest)}</span><b>×${g.seats}</b></div>`).join("")}</div>`:`<p class="muted">${t("no_guests")}</p>`}`}
+  const now=Date.now(),isPast=e=>new Date(e.starts_at).getTime()<now-3*3600e3;
+  const card=e=>{const off=e.status!="scheduled";return `<div class="card event tap ${off?"off":""}" onclick="evOpen(${e.id})"><div class="row" style="align-items:flex-start"><div><div class="date">${evWhen(e)}</div><b>${L(e.title)}</b>${off?` <span class="pill">${t("cancelled")}</span>`:""}</div>
+   <span class="pill" style="white-space:nowrap">${D.seats[e.id]||0}/${e.seats}</span></div></div>`};
+  const up=D.events.filter(e=>!isPast(e)),past=D.events.filter(isPast).reverse();
+  return `<h1>${t("evs")}</h1><button class="btn" style="margin-bottom:14px" onclick="evEdit('new')">+ ${t("add_ev")}</button>`+(up.length?up.map(card).join(""):`<p class="muted">${t("no_events")}</p>`)+
+   (past.length?`<h2 class="tap" onclick="EPAST=!EPAST;render()">${t("past")} (${past.length}) ${EPAST?"▴":"▾"}</h2>`+(EPAST?past.map(card).join(""):""):"")}
+};
+
+// ===== Действия гостя =====
+async function seat(id,n){const cur=D.mine[id]||0;try{await q(sb.rpc("set_booking",{p_event:id,p_seats:Math.max(0,cur+n)}))}catch(_){await refresh();return}
+ const v=Math.max(0,cur+n);toast(v==0?t("cancel_ok"):cur==0?t("signed_ok"):t("seats_mine")+": "+v);await refresh()}
+
+// ===== Касса =====
+async function saveName(){const v=document.getElementById("myname").value.trim();if(!v)return;await q(sb.from("profiles").update({name:v}).eq("id",ME.id));ME.name=v;render();toast(t("saved"))}
+async function openGuest(where){const g=await q(sb.from("profiles").select("id,email,name,tg_username,qr_token").match(where).maybeSingle());
+ if(!g){toast(t("not_found"));return}
+ const b=await q(sb.from("balances").select("points").eq("guest_id",g.id).maybeSingle());
+ GUEST={...g,balance:b?b.points:0};CART={};RSEL=null;CMODE="earn";render()}
+async function findGuest(){const v=document.getElementById("gemail").value.trim().toLowerCase();if(!v)return;await openGuest({email:v})}
+async function reloadGuest(){const b=await q(sb.from("balances").select("points").eq("guest_id",GUEST.id).maybeSingle());GUEST.balance=b?b.points:0}
+function endGuest(){GUEST=null;CART={};RSEL=null;render()}
+const cartPts=()=>Object.entries(CART).reduce((a,[id,n])=>a+n*((D.drinks.find(d=>d.id==id)||{points:0}).points),0);
+function addD(id,n){CART[id]=Math.max(0,(CART[id]||0)+n);if(!CART[id])delete CART[id];render()}
+function pickR(id){const r=D.rewards.find(x=>x.id==id);if(GUEST.balance<r.cost){toast(t("e_points"));return}RSEL=RSEL==id?null:id;render()}
+async function accrue(){const items=Object.entries(CART).map(([id,n])=>({drink_id:+id,qty:n}));if(!items.length)return;
+ document.getElementById("payb").disabled=true;
+ try{const p=await q(sb.rpc("earn_points",{p_qr:GUEST.qr_token,p_items:items}));CART={};await reloadGuest();render();toast(t("accrued")+": +"+p+" "+t("pts"))}catch(_){render()}}
+async function giveR(){const r=D.rewards.find(x=>x.id==RSEL);if(!r)return;document.getElementById("payb").disabled=true;
+ try{await q(sb.rpc("give_reward",{p_qr:GUEST.qr_token,p_reward:r.id}));RSEL=null;await reloadGuest();render();toast(t("given")+": "+L(r.name))}catch(_){await reloadGuest();render()}}
+async function startScan(){if(typeof jsQR==="undefined"){toast(t("cam_err"));return}
+ try{STREAM=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})}catch(_){toast(t("cam_err"));return}
+ SCANNING=true;render();const v=document.getElementById("vid");v.srcObject=STREAM;await v.play();
+ const c=document.createElement("canvas"),x=c.getContext("2d",{willReadFrequently:true});
+ const tick=()=>{if(!SCANNING)return;if(v.readyState>=2&&v.videoWidth){c.width=v.videoWidth;c.height=v.videoHeight;x.drawImage(v,0,0);
+  const r=jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height,{inversionAttempts:"dontInvert"});
+  if(r&&r.data.startsWith("TELEMENT:")){const tok=r.data.slice(9);stopScan();if(navigator.vibrate)navigator.vibrate(80);openGuest({qr_token:tok});return}}
+  requestAnimationFrame(tick)};tick()}
+function stopScan(){SCANNING=false;if(STREAM){STREAM.getTracks().forEach(x=>x.stop());STREAM=null}}
+
+// ===== Меню и сотрудники =====
+async function saveItem(){const isD=MLIST=="drinks",g=k=>document.getElementById(k).value.trim();const ru=g("f_ru"),n=parseInt(g("f_pts"),10);
+ if(!ru||!(n>0)){toast(t("need_name"));return}
+ const row={name:{ru,sr:g("f_sr"),en:g("f_en")},[isD?"points":"cost"]:n};
+ if(EDIT=="new")await q(sb.from(MLIST).insert(row));else await q(sb.from(MLIST).update(row).eq("id",EDIT));
+ EDIT=null;toast(t("saved"));await refresh()}
+async function setActive(id,on){if(!on&&!confirm(t("del_q")))return;await q(sb.from(MLIST).update({active:on}).eq("id",id));await refresh()}
+async function loadStaff(){D.staff=await q(sb.from("profiles").select("id,email,name,role").in("role",["cashier","admin"]).order("role"));render()}
+async function setRoleFor(id,role){await q(sb.rpc("set_role",{p_user:id,p_role:role}));toast(t("saved"));await loadStaff()}
+async function setRoleByEmail(role){const v=document.getElementById("semail").value.trim().toLowerCase();if(!v)return;
+ const p=await q(sb.from("profiles").select("id").eq("email",v).maybeSingle());if(!p){toast(t("not_found"));return}await setRoleFor(p.id,role)}
+
+// ===== Журнал =====
+async function loadLog(){D.log=null;render();
+ if(LOGT=="changes"&&isAdmin())D.log=await q(sb.from("staff_log").select("*,staff:profiles(name,email)").order("id",{ascending:false}).limit(100));
+ else D.log=await q(sb.from("ledger").select("*,ledger_items(qty,name_snap),staff:profiles!ledger_staff_id_fkey(name,email),guest:profiles!ledger_guest_id_fkey(name,email,tg_username)").order("id",{ascending:false}).limit(100));
+ render()}
+async function voidEntry(id){if(!confirm(t("void_q")))return;await q(sb.rpc("void_entry",{p_id:id,p_note:null}));await loadLog()}
+
+// ===== Афиша: правка =====
+const pad=n=>String(n).padStart(2,"0");
+const toLocalInput=s=>{const d=new Date(s);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes())};
+async function evOpen(id){EVO=id;EVE=null;D.evGuests=null;render();window.scrollTo(0,0);
+ D.evGuests=await q(sb.from("bookings").select("seats,guest:profiles(name,email,tg_username)").eq("event_id",id).order("updated_at"));render()}
+function evEdit(id){EVE=id;EBLOB=null;const e=D.events.find(x=>x.id==id);EIMG=e&&e.image_path?IMG(e.image_path):null;render();window.scrollTo(0,0)}
+function evBack(){if(EVE&&EVE!="new")EVE=null;else{EVE=null;EVO=null}render();window.scrollTo(0,0)}
+function evPhoto(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();
+ r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,1200/im.width),c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+  c.getContext("2d").drawImage(im,0,0,c.width,c.height);EIMG=c.toDataURL("image/jpeg",.8);c.toBlob(b=>EBLOB=b,"image/jpeg",.8);
+  document.getElementById("fe_prev").innerHTML=`<img src="${EIMG}" alt="">`};im.src=r.result};r.readAsDataURL(f)}
+async function evSave(){const g=k=>document.getElementById(k).value.trim(),num=k=>parseInt(g(k),10);
+ const ru=g("fe_ru"),when=g("fe_when"),seats=num("fe_seats");
+ if(!ru||!when||!(seats>0)){toast(t("need_ev"));return}
+ const btn=document.getElementById("evsave");btn.disabled=true;
+ try{const row={title:{ru,sr:g("fe_sr"),en:g("fe_en")},description:{ru:g("fe_dru"),sr:g("fe_dsr"),en:g("fe_den")},starts_at:new Date(when).toISOString(),
+   price_rsd:num("fe_price")||0,seats,max_per_guest:Math.max(1,num("fe_maxg")||4)};
+  if(EBLOB){toast(t("uploading"));const path=Date.now()+"-"+Math.random().toString(36).slice(2,8)+".jpg";
+   await q(sb.storage.from("event-images").upload(path,EBLOB,{contentType:"image/jpeg"}));row.image_path=path}
+  let id=EVE;
+  if(EVE=="new")id=(await q(sb.from("events").insert(row).select("id").single())).id;else await q(sb.from("events").update(row).eq("id",EVE));
+  EVE=null;EBLOB=null;await refresh();toast(t("saved"));evOpen(id)}catch(_){btn.disabled=false}}
+async function evDel(id){const tk=D.seats[id]||0;
+ if(tk>0){if(!confirm(t("cancel_evq")))return;await evStatus(id,"cancelled");return}
+ if(!confirm(t("del_evq")))return;await q(sb.from("events").delete().eq("id",id));EVO=null;await refresh()}
+async function evStatus(id,s){await q(sb.from("events").update({status:s}).eq("id",id));await refresh()}
+
+// ===== Старт =====
+sb.auth.onAuthStateChange((ev,session)=>{if(ev=="SIGNED_OUT"){ME=null;render()}
+ if((ev=="SIGNED_IN"||ev=="INITIAL_SESSION")&&session)setTimeout(async()=>{try{await loadMe();BOOT=false;await refresh()}catch(e){BOOT=false;render()}},0);
+ if(ev=="INITIAL_SESSION"&&!session){BOOT=false;render()}});
+(()=>{const h=new URLSearchParams(location.hash.slice(1));if(h.get("error")){setTimeout(()=>toast(t("e_link")),300);history.replaceState(null,"",location.pathname)}})();
+const _render=render;render=function(){_render();if(ME&&TAB=="log"&&D.log===undefined){D.log=null;loadLog()}if(ME&&TAB=="menu"&&MLIST=="staff"&&D.staff===undefined){D.staff=null;loadStaff()}};
+
+</script>
+</body>
+</html>
