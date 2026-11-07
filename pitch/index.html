@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Приложение для гостей t.element</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#2b2b2b;--muted:#7d7d7d;--line:#ececec;--soft:#f6f5f2;--accent:#2f6fd6;--accent-soft:#eaf1fc}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#fff;line-height:1.55;font-size:16px}
+  .wrap{max-width:760px;margin:0 auto;padding:28px 20px 60px}
+  .top{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+  .top img{height:30px}
+  .top span{color:var(--muted);font-size:13px;margin-left:auto}
+  h1{font-size:30px;line-height:1.2;letter-spacing:-.4px;margin-bottom:14px}
+  h2{font-size:22px;margin:44px 0 12px;letter-spacing:-.2px}
+  h3{font-size:17px;margin:26px 0 8px}
+  p{margin:0 0 12px}
+  .lead{font-size:18px}
+  .muted{color:var(--muted);font-size:14px}
+  a{color:var(--accent)}
+  .figs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:22px 0}
+  @media(min-width:640px){.figs{grid-template-columns:repeat(4,1fr)}}
+  .fig{background:var(--soft);border-radius:10px;padding:16px 14px;text-align:center}
+  .fig.main{background:var(--accent-soft);box-shadow:inset 0 0 0 2px var(--accent)}
+  .fig b{display:block;font-size:24px;font-weight:700;line-height:1.2}
+  .fig span{display:block;font-size:13px;margin-top:6px}
+  .fig i{display:block;font-style:normal;font-size:12px;color:var(--muted)}
+  .links{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 4px}
+  .links a{flex:1 1 220px;text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--ink)}
+  .links a b{display:block;color:var(--accent)}
+  .links a span{font-size:13px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:15px}
+  th,td{text-align:left;vertical-align:top;padding:10px 10px;border-bottom:1px solid var(--line)}
+  th{font-size:13px;color:var(--muted);font-weight:600}
+  td.n{white-space:nowrap;font-weight:600}
+  .scroll{overflow-x:auto}
+  ol,ul{padding-left:22px;margin:0 0 12px}
+  li{margin-bottom:6px}
+  figure{margin:18px 0}
+  figure img{width:100%;height:auto;border:1px solid var(--line);border-radius:10px;display:block}
+  figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+  .check li{list-style:none;position:relative;padding-left:4px}
+  .check li:before{content:"☐";position:absolute;left:-22px;color:var(--muted)}
+  details{margin-top:44px;border-top:1px solid var(--line);padding-top:16px}
+  summary{font-size:20px;font-weight:700;cursor:pointer}
+  summary span{font-size:14px;font-weight:400;color:var(--muted)}
+  .foot{margin-top:40px;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><img src="../assets/logo-horizontal.png" alt="t.element"><span>7 ноября 2026</span></div>
+
+<h1>Приложение для гостей t.element</h1>
+<p class="lead">Предлагаем выпустить своё приложение t.element в App Store и Google Play для постоянных гостей: цифровую карту лояльности, афишу с записью и новинки с полок.</p>
+<p>Приложение делает Евгений. Он работает в t.element и знает чайную и гостей изнутри.</p>
+
+<div class="figs">
+  <div class="fig main"><b>1 200 €</b><span>разработка и публикация</span><i>один раз</i></div>
+  <div class="fig"><b>150 €</b><span>поддержка в месяц</span><i>до 4 часов работы</i></div>
+  <div class="fig"><b>0 €</b><span>сервер и почта</span><i>на бесплатных тарифах</i></div>
+  <div class="fig"><b>15 янв 2027</b><span>релиз в магазинах</span><i>при добре до 20 ноября</i></div>
+</div>
+
+<p>Посмотреть можно уже сейчас:</p>
+<div class="links">
+  <a href="https://ezhulikov.github.io/telement-app-prototype/"><b>Прототип</b><span>выдуманные данные, кнопки «Гость», «Кассир», «Админ» вверху переключают роль</span></a>
+  <a href="https://ezhulikov.github.io/telement-app-prototype/app/"><b>Рабочая версия</b><span>на настоящем сервере, вход по почте, идёт внутренняя проверка</span></a>
+</div>
+
+<h2>Для кого</h2>
+<p>Для постоянных гостей t.element. Это люди, которые уже приходят за чаем и напитками, ходят на дегустации и собирают печати на бумажной карточке. Приложение не для привлечения новых людей с улицы, а чтобы свои гости возвращались чаще.</p>
+<p>Вторая аудитория это команда: кассиры ведут баллы и список записавшихся, админы ведут меню, награды и афишу.</p>
+
+<h2>Боли</h2>
+<p>У постоянных гостей нет причины возвращаться чаще, а у чайной нет прямого канала к ним.</p>
+<table>
+<tr><th>Кого касается</th><th>Что мешает сейчас</th></tr>
+<tr><td class="n">Гости</td><td>Нечем выделиться и не за что возвращаться чаще. Бумажная карточка теряется и забывается дома.</td></tr>
+<tr><td class="n">Гости</td><td>Пропускают новинки на полках и мероприятия.</td></tr>
+<tr><td class="n">Чайная</td><td>Не знает, кто её постоянные гости и как часто они приходят: печати на бумаге не дают данных.</td></tr>
+<tr><td class="n">Чайная</td><td>Мероприятия платные, мест мало. Считать места и собирать записи приходится вручную.</td></tr>
+</table>
+
+<h2>Что умеет приложение</h2>
+<p>Одно приложение в App Store и Google Play для всех. Что видит человек, зависит от его роли. Три языка: русский, сербский, английский.</p>
+<figure><img src="screens.png" alt="Три экрана приложения: гость, афиша, касса"><figcaption>Упрощённые экраны с примером данных</figcaption></figure>
+<table>
+<tr><th>Роль</th><th>Что делает в приложении</th></tr>
+<tr><td class="n">Гость</td><td>Входит по почте без пароля. Показывает QR на кассе, копит баллы за напитки, видит награды и историю. Записывается на мероприятия в одно нажатие, может занять места для друзей. Смотрит новинки и заказывает их на сайте. Получает уведомления о новинках и мероприятиях. Карту гостя можно добавить в Apple Wallet и Google Wallet.</td></tr>
+<tr><td class="n">Кассир</td><td>Сканирует QR гостя камерой телефона, отмечает напитки плитками, баллы считаются сами. Выдаёт награды. Ведёт афишу и видит список записавшихся.</td></tr>
+<tr><td class="n">Админ</td><td>Всё, что кассир, плюс меню напитков с баллами, награды и сотрудники. Видит журнал всех начислений и правок с именем сотрудника и временем, может отменить ошибочную операцию.</td></tr>
+</table>
+<p>Меню, награды и афиша меняются прямо в приложении, без программиста и без новой проверки в магазинах. Оплата мероприятий остаётся наличными на месте, онлайн-оплату можно добавить позже.</p>
+
+<h2>Ожидаемые выгоды</h2>
+<p>Главная выгода: постоянные гости приходят чаще, а чайная может напрямую сообщить им о новинке или дегустации.</p>
+<ol>
+<li><b>Возвраты.</b> Баллы и награды дают гостю причину зайти ещё раз. Карта всегда в телефоне и не теряется.</li>
+<li><b>Свой канал связи.</b> Уведомление приходит сразу всем постоянным гостям, без рекламы и алгоритмов соцсетей.</li>
+<li><b>Полные мероприятия.</b> Запись в одно нажатие, счётчик мест ведётся сам, список гостей виден кассиру.</li>
+<li><b>Знание своих гостей.</b> Видно, сколько у чайной постоянных гостей, как часто они приходят и что пьют.</li>
+<li><b>Порядок в баллах.</b> Каждое начисление и каждая правка записаны с именем сотрудника и временем.</li>
+<li><b>Образ чайной.</b> Своё приложение в App Store и Google Play выделяет t.element среди кофеен и чайных города.</li>
+</ol>
+<p>Цифр выгоды мы заранее не обещаем. На тесте считаем две вещи: сколько постоянных гостей поставили приложение и как часто они приходят до и после.</p>
+
+<h2>Сроки</h2>
+<p>Если добро будет до 20 ноября, приложение выйдет в App Store и Google Play не позже 15 января 2027. Это наша оценка с запасом на новогодние праздники и на один отказ при проверке.</p>
+<figure><img src="timeline.png" alt="План до релиза"><figcaption>План до релиза, 6 этапов</figcaption></figure>
+<p>Откуда берутся сроки:</p>
+<ul>
+<li><b>Аккаунты, 2 недели.</b> Номер D-U-N-S для компании приходит до 5 рабочих дней, и ещё до 2 дней Apple ждёт его передачи (<a href="https://developer.apple.com/support/D-U-N-S/">Apple</a>). Тот же номер нужен Google (<a href="https://support.google.com/googleplay/android-developer/answer/13634885">Google Play</a>).</li>
+<li><b>Сборка для магазинов, 3 недели.</b> Упаковка приложения, уведомления, карта в Wallet, удаление аккаунта из приложения. Идёт параллельно с аккаунтами.</li>
+<li><b>Тест, 2 недели.</b> Google требует от новых личных аккаунтов закрытый тест на 12 людях в течение 14 дней (<a href="https://support.google.com/googleplay/android-developer/answer/14151465">Google Play</a>). Мы всё равно совмещаем его с тестом на постоянных гостях.</li>
+<li><b>Проверка, до 2 недель.</b> Apple проверяет 90% приложений меньше чем за 48 часов (<a href="https://developer.apple.com/distribute/app-review/">Apple</a>). Остальное время запас на правки и праздники.</li>
+</ul>
+<p>Уже сделано: прототип, рабочая версия на сервере, база данных с правами доступа и проверками, админка и афиша.</p>
+
+<h2>Стоимость</h2>
+<p>Первый год обойдётся в 3 000 € за работу и 124 $ за аккаунты магазинов. Сервер и почта на старте бесплатны.</p>
+<div class="scroll"><table>
+<tr><th>Статья</th><th>Цена</th><th>Как часто</th></tr>
+<tr><td>Разработка, тест и публикация в App Store и Google Play</td><td class="n">1 200 €</td><td>один раз</td></tr>
+<tr><td>Поддержка, до 4 часов в месяц: исправления, мелкие правки, обновления под новые iOS и Android, помощь команде. Новые функции оцениваются отдельно</td><td class="n">150 €</td><td>в месяц</td></tr>
+<tr><td><a href="https://developer.apple.com/programs/enroll/">Apple Developer Program</a>: аккаунт для App Store и Apple Wallet</td><td class="n">99 $</td><td>в год</td></tr>
+<tr><td><a href="https://support.google.com/googleplay/android-developer/answer/6112435">Google Play Console</a>: аккаунт для Google Play</td><td class="n">25 $</td><td>один раз</td></tr>
+<tr><td>Номер <a href="https://developer.apple.com/support/D-U-N-S/">D-U-N-S</a> для аккаунтов от имени компании</td><td class="n">0 €</td><td>один раз</td></tr>
+<tr><td>Сервер <a href="https://supabase.com/pricing">Supabase</a>, бесплатный тариф: до 50 000 активных пользователей в месяц</td><td class="n">0 €</td><td>в месяц</td></tr>
+<tr><td>Почта для входа <a href="https://resend.com/pricing">Resend</a>, бесплатный тариф: до 100 писем в день</td><td class="n">0 €</td><td>в месяц</td></tr>
+</table></div>
+<p>Если чайная вырастет из бесплатного тарифа, Supabase Pro стоит от 25 $ в месяц. Разработка оплачивается фиксированно: если работа займёт больше времени, цена не растёт. Аккаунты магазинов и сервера оформляются на чайную, а не на разработчика.</p>
+
+<h3>Когда это окупается</h3>
+<p>В первый год работа стоит в среднем 250 € в месяц, это около 29 400 динаров по курсу 117,6. Столько дополнительных визитов в месяц покрывают эту сумму по выручке:</p>
+<table>
+<tr><th>Средний чек</th><th>Доп. визитов в месяц</th><th>Это в день</th></tr>
+<tr><td class="n">600 дин</td><td>49</td><td>около 2</td></tr>
+<tr><td class="n">900 дин</td><td>33</td><td>около 1</td></tr>
+<tr><td class="n">1 200 дин</td><td>25</td><td>меньше 1</td></tr>
+</table>
+<p>Со второго года остаются только поддержка и аккаунт Apple, около 157 € в месяц, и порог падает больше чем на треть. Для сравнения: если приложение заполнит десять мест на дегустации по 1 200 дин, это 12 000 дин выручки, больше трети месячной суммы.</p>
+
+<h3>Сколько стоят награды</h3>
+<p>Награды это скидка для постоянных гостей, и её размер задаёт чайная. Например, 10 баллов за напиток и награда за 100 баллов дают бесплатный напиток на каждые 10 купленных, это скидка около 9%. Если оставить то же правило, что на бумажной карточке, приложение не добавляет новых расходов на награды. Правило меняется в админке в любой момент.</p>
+
+<h2>Риски и что мы с ними делаем</h2>
+<p>Самый вероятный риск в том, что гости не станут ставить приложение. Поэтому сначала тест на небольшой группе, потом запуск для всех.</p>
+<table>
+<tr><th>Риск</th><th>Что делаем</th></tr>
+<tr><td>Гости не ставят приложение</td><td>Тест на 12 и более постоянных гостях до запуска. Кассир предлагает приложение при оплате, на кассе QR со ссылкой на магазины. До установки карта работает по ссылке в браузере.</td></tr>
+<tr><td>Apple отклоняет приложение как «переупакованный сайт» (<a href="https://developer.apple.com/app-store/review/guidelines/">правило 4.2</a>)</td><td>В приложении есть функции телефона: уведомления, карта в Wallet, камера кассира. В сроках заложена неделя на повторную проверку.</td></tr>
+<tr><td>Оформление аккаунтов компании затягивается</td><td>Номер D-U-N-S запрашиваем в первый день после добра. Разработка идёт параллельно и не ждёт аккаунтов.</td></tr>
+<tr><td>Касса тормозит в час пик</td><td>Начисление занимает три нажатия: скан, напитки, «Начислить». Если камера не сработала, гостя можно найти по почте.</td></tr>
+<tr><td>Злоупотребления и ошибки с баллами</td><td>Баллы меняет только сервер, всё пишется в журнал с именем сотрудника. Ошибку отменяет только админ. Позже можно сделать QR, который меняется каждую минуту.</td></tr>
+<tr><td>Зависимость от одного разработчика</td><td>Аккаунты и код принадлежат чайной. Сервисы распространённые, есть описание базы и проверки. Другой разработчик сможет продолжить.</td></tr>
+<tr><td>Потеря данных или сбой сервера</td><td>Ночная резервная копия базы на отдельном сервере. Бесплатный тариф Supabase ставит проект на паузу после недели без активности, при ежедневной работе чайной это не случится.</td></tr>
+<tr><td>Личные данные гостей</td><td>Храним только почту и имя. Сервер в Ирландии, в ЕС. Гость может удалить аккаунт, журнал баллов при этом становится безымянным.</td></tr>
+</table>
+
+<h2>Что нужно от владельцев</h2>
+<p>Чем раньше добро, тем раньше релиз: самое долгое здесь это оформление аккаунтов компании.</p>
+<ul class="check">
+<li>Добро на запуск и бюджет из раздела «Стоимость».</li>
+<li>Данные юрлица для D-U-N-S и человек с правом подписи: Apple требует, чтобы аккаунт оформлял владелец или сотрудник с его полномочиями.</li>
+<li>Рабочая почта на домене t-element.rs для аккаунта Apple.</li>
+<li>Доступ к DNS домена у Hostinger: чтобы письма для входа шли от имени чайной.</li>
+<li>Правило баллов: сколько за каждый напиток и сколько стоит каждая награда.</li>
+<li>12 и более постоянных гостей, готовых попробовать приложение две недели до релиза.</li>
+</ul>
+
+<details>
+<summary>Технические детали <span>для тех, кому интересно</span></summary>
+<figure><img src="architecture.png" alt="Как устроено приложение"><figcaption>Как устроено приложение</figcaption></figure>
+<ul>
+<li><b>Официальные приложения.</b> Гость скачивает t.element из App Store или Google Play, как любое другое приложение. Перед публикацией каждую версию проверяют Apple и Google. Приложение выходит от имени чайной.</li>
+<li><b>Один код на все телефоны.</b> iPhone, Android и браузер работают на одной кодовой базе. Поэтому правки дешевле, чем с двумя отдельными приложениями.</li>
+<li><b>Меню, награды и афиша лежат на сервере.</b> Их правки появляются у всех сразу, без новой версии в магазинах.</li>
+<li><b>Сервер.</b> <a href="https://supabase.com/pricing">Supabase</a> на базе PostgreSQL, центр данных в Ирландии. Права доступа заданы в самой базе: гость видит только свои баллы, кассир не может менять меню, баллы меняются только серверными функциями.</li>
+<li><b>Проверено.</b> 16 автоматических проверок базы проходят, встроенная проверка безопасности Supabase ошибок не находит.</li>
+<li><b>Владение.</b> Аккаунты Apple, Google и Supabase оформляются на чайную. Код хранится в репозитории GitHub.</li>
+</ul>
+</details>
+
+<p class="foot">Вопросы и обсуждение: Евгений.</p>
+</div>
+</body>
+</html>
