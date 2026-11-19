@@ -50,6 +50,8 @@
   .foot{margin-top:40px;font-size:13px;color:var(--muted)}
   tr.total td{font-weight:700;border-top:2px solid var(--ink)}
   td.r,th.r{text-align:right;white-space:nowrap}
+  table.pay{font-size:14px}
+  table.pay th,table.pay td{padding:8px 4px}
 </style>
 </head>
 <body>
@@ -90,8 +92,8 @@
 
 <h2>Оплата</h2>
 <p>Пример, если начинаем 1 января 2027 и запускаемся 1 марта.</p>
-<div class="scroll"><table>
-  <tr><th>Месяц</th><th class="r">Старт</th><th class="r">Разработка</th><th class="r">Поддержка</th><th class="r">Итого</th></tr>
+<div class="scroll"><table class="pay">
+  <tr><th>Месяц</th><th class="r">Старт</th><th class="r">Разраб.</th><th class="r">Подд.</th><th class="r">Итого</th></tr>
   <tr><td>Январь</td><td class="r">600 €</td><td class="r"></td><td class="r"></td><td class="r n">600 €</td></tr>
   <tr><td>Февраль</td><td class="r"></td><td class="r">100 €</td><td class="r"></td><td class="r n">100 €</td></tr>
   <tr><td>Март</td><td class="r"></td><td class="r">100 €</td><td class="r">150 €</td><td class="r n">250 €</td></tr>
